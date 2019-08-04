@@ -26,7 +26,7 @@
       <pubDate>Sat, 27 Jul 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/network_analysis/</guid>
-      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance Transitivity    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship.</description>
+      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance Transitivity    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It can be applied to many fields, like computer science, linguistics, social science, and biology, and useful for any systematic studies on individual relationship.</description>
     </item>
     
   </channel>
