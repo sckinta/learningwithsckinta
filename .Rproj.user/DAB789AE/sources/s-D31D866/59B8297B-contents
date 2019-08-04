@@ -1,4 +1,4 @@
-baseurl                 = "https://example.com/"
+baseurl                 = "https://learniningwithsckinta.netlify.com/"
 DefaultContentLanguage  = "en"
 title                   = "Learning With Sckinta"
 theme = "hugo-future-imperfect-slim"
@@ -186,7 +186,7 @@ disableLanguages        = [""]
 # and socialAppearAtBottom.
 [social]
   # Coding Communities
-  github                = "https://github.com/sckinta"
+  github                = "sckinta"
   # gitlab                = ""
   # stackoverflow         = "" # User Number
   # bitbucket             = ""
@@ -201,7 +201,7 @@ disableLanguages        = [""]
   # wordpress             = ""
   # medium                = ""
   # Professional/Business Oriented Communities
-  linkedin              = "https://www.linkedin.com/in/chun-su-a031087b/"
+  linkedin              = "chun-su-a031087b"
   # linkedin_company      = "examplebusiness"
   # foursquare            = ""
   # xing                  = ""
@@ -219,7 +219,7 @@ disableLanguages        = [""]
     # qq                  = "" # User ID Number
   # instagram             = "example"
   # tumblr                = ""
-  twitter               = "https://twitter.com/SophiaSu0205"
+  twitter               = "SophiaSu0205"
   # skype                 = ""
   # snapchat              = ""
   # pinterest             = "example"
@@ -227,7 +227,7 @@ disableLanguages        = [""]
   # vine                  = ""
   # googlescholar         = ""
   # orcid                 = ""
-  researchgate          = "https://www.researchgate.net/profile/Chun_Su"
+  researchgate          = "Chun_Su"
   # keybase               = "example"
   # mastodon              = "example.com/@example"
   # Email

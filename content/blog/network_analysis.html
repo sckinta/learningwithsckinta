@@ -1,0 +1,252 @@
+---
+title: "Network Analysis in R"
+author: "Chun Su"
+date: "7/11/2019"
+output: html_document
+---
+
+
+
+<p>Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. <a href="https://en.wikipedia.org/wiki/Graph_theory">wiki</a></p>
+<p>This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.</p>
+<div id="glossaries" class="section level2">
+<h2>Glossaries</h2>
+<p><strong>Vertex</strong>: is the node of network<br />
+<strong>Edge</strong>: the connection of notes, sometimes called “linked”. The edge can be <strong>directed</strong> or <strong>undirected</strong>, depending on whether the distinction between source and target is meaningful.<br />
+<strong>Graph</strong>: constitute of vertex and edges, which represents the whole inter-relationship of nodes. The <strong>subgraph</strong>, from the other hand, represents the inter-relationship of a subset of nodes.<br />
+<strong>Cliques</strong>: Fully connected subgraphs of a graph in which the every vertex connects with every other vertex.<br />
+<strong>Degree</strong> : the number of adajant vertex.<br />
+<strong>Order</strong> : how far away from one vertex to another. order 0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.<br />
+<strong>Attribute</strong>: attributes are associated with either vertex or edge. By default, the <code>name</code> is the mandatory atrribute for vertex and edge. If the edges have a magnitude attribute, the graph is considered <strong>weighted</strong>.<br />
+<strong>Bipartite networks</strong>: two-mode networks, in which there are two types of vertex/nodes and connections are only allowed between different types of nodes. Thus, <code>type</code> is a mandatory vertex attribute for bipartite networks. There are two types of common used bipartite networks, 1) the network consists of two types of vertex as individual and groups in which indiviudual (the first type of vertex) are members of group (the second type of vertex). This is also called “affilication network”. 2) the network consistent of two “parallel” groups of vertex, in which group 1 only interact with group 2 while no interactions happen within the same group.</p>
+</div>
+<div id="create-a-graph" class="section level2">
+<h2>Create a graph</h2>
+<p>There are many ways to create graph from scratch. Here we are going to introduce four most popular ways to create graph using igraph package.</p>
+<div id="from-edge-list" class="section level3">
+<h3>From edge list</h3>
+<p>The example below generates a directed graph from a list of vertex pair (edge)</p>
+<pre class="r"><code>library(igraph)</code></pre>
+<pre class="r"><code>edge_list = data.frame(from = c(1, 2, 2, 3, 4), to = c(2, 3, 4, 2, 1))
+edge_list</code></pre>
+<pre><code>##   from to
+## 1    1  2
+## 2    2  3
+## 3    2  4
+## 4    3  2
+## 5    4  1</code></pre>
+<pre class="r"><code>m = as.matrix(edge_list)
+g = graph_from_edgelist(m,directed = TRUE)
+g</code></pre>
+<pre><code>## IGRAPH 8fdd1f6 D--- 4 5 -- 
+## + edges from 8fdd1f6:
+## [1] 1-&gt;2 2-&gt;3 2-&gt;4 3-&gt;2 4-&gt;1</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/edgelist-1.png" width="672" /></p>
+<p>If the edge is given in a single vector, the default make_graph will use the order of vector to make one-mode graph. It means that the first edge points from the first element to the second, the second edge from the third to the fourth, etc.</p>
+<pre class="r"><code>g = make_graph(letters[1:10], directed = T)
+g</code></pre>
+<pre><code>## IGRAPH d00a932 DN-- 10 5 -- 
+## + attr: name (v/c)
+## + edges from d00a932 (vertex names):
+## [1] a-&gt;b c-&gt;d e-&gt;f g-&gt;h i-&gt;j</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/make_graph_from_edgeVector-1.png" width="672" /></p>
+</div>
+<div id="from-adjacent-matrix" class="section level3">
+<h3>From adjacent matrix</h3>
+<p>The example below generates a undirected graph from a binary matrix, in which nodes are matrix colname and rowname.</p>
+<pre class="r"><code>set.seed(123)
+adj_matrix = matrix(sample(0:1, 100, replace=TRUE, prob=c(0.8,0.1)), nc=10)
+adj_matrix</code></pre>
+<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]    0    1    1    1    0    0    0    0    0     0
+##  [2,]    0    0    0    1    0    0    0    0    0     0
+##  [3,]    0    0    0    0    0    0    0    0    0     0
+##  [4,]    0    0    1    0    0    0    0    0    0     0
+##  [5,]    1    0    0    0    0    0    0    0    0     0
+##  [6,]    0    1    0    0    0    0    0    0    0     0
+##  [7,]    0    0    0    0    0    0    0    0    1     0
+##  [8,]    1    0    0    0    0    0    0    0    1     0
+##  [9,]    0    0    0    0    0    1    0    0    0     0
+## [10,]    0    1    0    0    0    0    0    0    0     0</code></pre>
+<pre class="r"><code>g = graph_from_adjacency_matrix(adj_matrix, mode = &quot;undirected&quot;, weighted = T)
+g</code></pre>
+<pre><code>## IGRAPH 7f73122 U-W- 10 12 -- 
+## + attr: weight (e/n)
+## + edges from 7f73122:
+##  [1] 1-- 2 1-- 3 1-- 4 1-- 5 1-- 8 2-- 4 2-- 6 2--10 3-- 4 6-- 9 7-- 9
+## [12] 8-- 9</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/adjacentMatrix-1.png" width="672" /></p>
+<p>There are other modes available with details at <a href="https://igraph.org/r/doc/graph_from_adjacency_matrix.html" class="uri">https://igraph.org/r/doc/graph_from_adjacency_matrix.html</a></p>
+</div>
+<div id="from-data.frame" class="section level3">
+<h3>From data.frame</h3>
+<p>The graph generated from data.frame can add all attributes at once. Here is the example from official website. The attributes for nodes (actors) are <code>age</code> and <code>gender</code>, and edge (relationship) attributes include same.dept, friendship and advice</p>
+<pre class="r"><code>actors &lt;- data.frame(
+  name=c(&quot;Alice&quot;, &quot;Bob&quot;, &quot;Cecil&quot;, &quot;David&quot;,&quot;Esmeralda&quot;),
+  age=c(48,33,45,34,21),
+  gender=c(&quot;F&quot;,&quot;M&quot;,&quot;F&quot;,&quot;M&quot;,&quot;F&quot;))
+relations &lt;- data.frame(
+  from=c(&quot;Bob&quot;, &quot;Cecil&quot;, &quot;Cecil&quot;, &quot;David&quot;,&quot;David&quot;, &quot;Esmeralda&quot;),
+  to=c(&quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;, &quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;),
+  same.dept=c(FALSE,FALSE,TRUE,FALSE,FALSE,TRUE),
+  friendship=c(4,5,5,2,1,1), 
+  advice=c(4,5,5,4,2,3)
+  )
+g &lt;- graph_from_data_frame(relations, directed=TRUE, vertices=actors)
+g</code></pre>
+<pre><code>## IGRAPH ddbda4f DN-- 5 6 -- 
+## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
+## | friendship (e/n), advice (e/n)
+## + edges from ddbda4f (vertex names):
+## [1] Bob      -&gt;Alice Cecil    -&gt;Bob   Cecil    -&gt;Alice David    -&gt;Alice
+## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/graphDataFrame-1.png" width="672" /></p>
+</div>
+<div id="create-random-graph" class="section level3">
+<h3>Create random graph</h3>
+<p>Random graph generation is useful when it comes to simulation.</p>
+<ul>
+<li><code>gnp</code> and <code>gnm</code> generate random graph by assumming the same constant probability for every possible edge. The required parameters for <code>gnp</code> and <code>gnm</code> are</li>
+</ul>
+<p>** <code>gnp</code> — the number of nodes/vertex and the constant probability ** <code>gnm</code> — the number of nodes/vertex and the number of edges</p>
+<pre class="r"><code># sample 10 vertex, every possible edge is created with the same constant probability 0.3
+set.seed(12)
+g &lt;- sample_gnp(10, 0.3)
+g</code></pre>
+<pre><code>## IGRAPH dd7f852 U--- 10 11 -- Erdos renyi (gnp) graph
+## + attr: name (g/c), type (g/c), loops (g/l), p (g/n)
+## + edges from dd7f852:
+##  [1] 2-- 5 3-- 5 5-- 6 4-- 7 3-- 8 6-- 8 1-- 9 3-- 9 8-- 9 3--10 8--10</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/gnp-1.png" width="672" /></p>
+<pre class="r"><code># sample 10 vertex, create a 15-edge graph
+set.seed(123)
+g &lt;- sample_gnm(10, 15)
+g</code></pre>
+<pre><code>## IGRAPH 6690150 U--- 10 15 -- Erdos renyi (gnm) graph
+## + attr: name (g/c), type (g/c), loops (g/l), m (g/n)
+## + edges from 6690150:
+##  [1] 1-- 2 1-- 4 2-- 4 3-- 4 5-- 6 2-- 7 3-- 7 5-- 7 2-- 8 3-- 8 6-- 8
+## [12] 1-- 9 4-- 9 5--10 9--10</code></pre>
+<pre class="r"><code>plot(g)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/gnp-2.png" width="672" /></p>
+<ul>
+<li>Random scale free network, which means a network whose degree of nodes distribution follows a power law. <code>sample_pa</code> generates scale-free graphs according to the Barabasi-Albert model. We start with a single vertex and no edges in the first time step. Then we add one vertex in each time step and the new vertex initiates some edges to old vertices. The probability that an old vertex is chosen is given by <span class="math inline">\(p(i) ~ k_i * power + zero.appeal\)</span></li>
+</ul>
+<pre class="r"><code>set.seed(123)
+g &lt;- sample_pa(100, power = 2)
+plot(g, vertex.label= NA, edge.arrow.size=0.02,vertex.size = 0.5)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/BA_random-1.png" width="672" /></p>
+<pre class="r"><code>plot(density(degree_distribution(g)))</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/BA_random-2.png" width="672" /></p>
+</div>
+</div>
+<div id="extract-vertex-and-edge-and-their-attributes" class="section level2">
+<h2>Extract vertex and edge and their attributes</h2>
+<div id="vertex" class="section level3">
+<h3>vertex</h3>
+<p>To get vertex list and their attributes from graph object, we use <code>V(graph)$&quot;attribute_name&quot;</code> to convert graph object to vector.</p>
+<p>First we generate graph object <code>g</code> using the actor relationship code from From data.frame. Then we get actor node (name), age (attribute 1) and gender (attribute 2)</p>
+<pre class="r"><code>V(g)$name</code></pre>
+<pre><code>## [1] &quot;Alice&quot;     &quot;Bob&quot;       &quot;Cecil&quot;     &quot;David&quot;     &quot;Esmeralda&quot;</code></pre>
+<pre class="r"><code>V(g)$age</code></pre>
+<pre><code>## [1] 48 33 45 34 21</code></pre>
+<pre class="r"><code>V(g)$gender</code></pre>
+<pre><code>## [1] &quot;F&quot; &quot;M&quot; &quot;F&quot; &quot;M&quot; &quot;F&quot;</code></pre>
+<p>We can also get all the vertex attributes to a data.frame using <code>as_data_frame()</code></p>
+<pre class="r"><code>as_data_frame(g, what = &quot;vertices&quot;)</code></pre>
+<pre><code>##                name age gender
+## Alice         Alice  48      F
+## Bob             Bob  33      M
+## Cecil         Cecil  45      F
+## David         David  34      M
+## Esmeralda Esmeralda  21      F</code></pre>
+</div>
+<div id="edges" class="section level3">
+<h3>edges</h3>
+<p>Similarily, to get edge list and their attributes from graph object, we use <code>E(graph)$&quot;attribute_name&quot;</code> to convert graph object to vector. OR using <code>as_data_frame()</code> to convert all edges to a data.frame</p>
+<pre class="r"><code># edge attributes
+E(g)$same.dept</code></pre>
+<pre><code>## [1] FALSE FALSE  TRUE FALSE FALSE  TRUE</code></pre>
+<pre class="r"><code>E(g)$friendship</code></pre>
+<pre><code>## [1] 4 5 5 2 1 1</code></pre>
+<pre class="r"><code># edge data.frame
+as_data_frame(g, what = &quot;edges&quot;)</code></pre>
+<pre><code>##        from    to same.dept friendship advice
+## 1     Alice   Bob     FALSE          4      4
+## 2       Bob David     FALSE          5      5
+## 3     Cecil Alice      TRUE          5      5
+## 4     David Alice     FALSE          2      4
+## 5     David   Bob     FALSE          1      2
+## 6 Esmeralda Alice      TRUE          1      3</code></pre>
+</div>
+</div>
+<div id="summarize-graph-statistics" class="section level2">
+<h2>summarize graph statistics</h2>
+<div id="degree-and-strength" class="section level3">
+<h3>Degree and strength</h3>
+<p><strong>Degree</strong> is a very important graph statistics when it comes to network analysis. For a given node(s) to get its degree, we use <code>degree</code>. Be aware that, for directed graph, the node degree can be in-degree (the edge number pointing to the node) and out-degree (the edge number pointing from node). We can also summarise the all degree by using <code>degree_distribution</code>.</p>
+<pre class="r"><code># get degree for node &quot;Alice&quot; and &quot;Bob&quot;
+degree(g, v=c(&quot;Alice&quot;,&quot;Bob&quot;))</code></pre>
+<pre><code>## Alice   Bob 
+##     4     3</code></pre>
+<pre class="r"><code>degree(g, v=c(&quot;Alice&quot;,&quot;Bob&quot;), mode = &quot;out&quot;)</code></pre>
+<pre><code>## Alice   Bob 
+##     1     1</code></pre>
+<pre class="r"><code># get degree and degree distribution for the whole graph
+degree(g, v=V(g))</code></pre>
+<pre><code>##     Alice       Bob     Cecil     David Esmeralda 
+##         4         3         1         3         1</code></pre>
+<pre class="r"><code>degree_distribution(g) # probability for degree 0,1,2,3,4</code></pre>
+<pre><code>## [1] 0.0 0.4 0.0 0.4 0.2</code></pre>
+<p><code>strength</code> is weigthed version of <code>degree</code>, by summing up the edge weights of the adjacent edges for each vertex.</p>
+</div>
+<div id="distance" class="section level3">
+<h3>Distance</h3>
+<p><code>distances</code> measures the edge number from one node to another. For directed graph, <code>in</code> mode only follow the paths toward the first node, while <code>out</code> mode goes away from the first node. If no connection can be made, <code>Inf</code> will be return.</p>
+<pre class="r"><code># count all edges from David to Cecil, regardless of direction
+distances(g,v=&quot;David&quot;, to=&quot;Cecil&quot;, mode=&quot;all&quot;)</code></pre>
+<pre><code>##       Cecil
+## David     2</code></pre>
+<pre class="r"><code># difference among different mode 
+distances(g,v=&quot;David&quot;, to=&quot;Esmeralda&quot;, mode=&quot;all&quot;)</code></pre>
+<pre><code>##       Esmeralda
+## David         2</code></pre>
+<pre class="r"><code>distances(g,v=&quot;David&quot;, to=&quot;Esmeralda&quot;, mode=&quot;in&quot;)</code></pre>
+<pre><code>##       Esmeralda
+## David         3</code></pre>
+<pre class="r"><code>distances(g,v=&quot;David&quot;, to=&quot;Esmeralda&quot;, mode=&quot;out&quot;)</code></pre>
+<pre><code>##       Esmeralda
+## David       Inf</code></pre>
+<pre class="r"><code># pairwise distance table
+distances(g, mode=&quot;all&quot;)</code></pre>
+<pre><code>##           Alice Bob Cecil David Esmeralda
+## Alice         0   1     1     1         1
+## Bob           1   0     2     1         2
+## Cecil         1   2     0     2         2
+## David         1   1     2     0         2
+## Esmeralda     1   2     2     2         0</code></pre>
+<pre class="r"><code># mean distance measures 
+mean_distance(g)</code></pre>
+<pre><code>## [1] 1.666667</code></pre>
+<p>The small world phenomenon also known as six degrees of separation. Two individual people on Earth are just six people “distance” from each other.</p>
+<p>You can also specify weight for edges and calculate the distance based on different calculation algorithm for weigth. See details by <code>help(&quot;distances&quot;)</code>. ### Transitivity Transitivity measures the probability that the adjacent vertices of a vertex are connected. This is sometimes also called the clustering coefficient, a proxy to determine how well connected the graph is</p>
+<pre class="r"><code># two extreme classes -- full graph and ring graph
+g1 = make_full_graph(10)
+transitivity(g1)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>plot(g1)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/Transitivity-1.png" width="672" /></p>
+<pre class="r"><code>g2 = make_ring(10)
+transitivity(g2)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>plot(g2)</code></pre>
+<p><img src="/blog/network_analysis_files/figure-html/Transitivity-2.png" width="672" /></p>
+<pre class="r"><code># </code></pre>
+<p>There are multiple different types of transivity can be calculated (weighted or unweigthed). Also, the transivity can be calcualted locally for a subgraph by specifying vertex ids. See details by <code>help(&quot;transitivity&quot;)</code></p>
+</div>
+</div>

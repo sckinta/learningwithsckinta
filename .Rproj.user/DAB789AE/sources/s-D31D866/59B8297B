@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "0",
+    "hash" : "3960911146",
     "id" : "59B8297B",
-    "lastKnownWriteTime" : 1564844144,
-    "last_content_update" : 1564844144511,
+    "lastKnownWriteTime" : 1564937582,
+    "last_content_update" : 1564937582166,
     "path" : "~/ShareFile/Personal Folders/Blog/learningwithsckinta/config.toml",
     "project_path" : "config.toml",
     "properties" : {
-        "cursorPosition" : "34,34",
-        "scrollLine" : "28"
+        "cursorPosition" : "229,27",
+        "scrollLine" : "215"
     },
     "relative_order" : 2,
     "source_on_save" : false,
