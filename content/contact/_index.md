@@ -1,11 +1,11 @@
 ---
-contactanswertime: 24
+contactanswertime: 72
 contactemail: Your Email
 contactlang: en
 contactmessage: Your Message
 contactname: Your name
 contactsubject: Subject
-emailservice: formspree.io/example@email.com
+emailservice: formspree.io/sckinta@gmail.com
 netlify: false
 title: Contact
 type: contact
