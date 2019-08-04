@@ -1,0 +1,12 @@
+---
+title: "About"
+date: "2019-08-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+I am Sckinta, also known as Chun Su in the real life. a bioinformatics scientist at the Children’s Hospital of Philadelphia. Originally from China, Chun moved to the States in 2011 and completed her PhD in Biology at the University of Virginia in 2017. Starting as Perl programmer, Chun picked up R and Python on her own by taking online courses and local meetup workshops. She believes that learning is a life-time mission and taking learning notes is a. Now she uses R extensively for statistical analysis and data visualization in her research. 

@@ -1,7 +1,7 @@
 ---
 title: "Network Analysis in R"
-author: "Chun Su"
-date: "2017-07-27"
+author: "Sckinta"
+date: "2019-07-27"
 categories: ["r"]
 tags: ["network"]
 output: 
@@ -197,7 +197,8 @@ mean_distance(g)
 
 The small world phenomenon also known as six degrees of separation. Two individual people on Earth are just six people “distance” from each other.  
 
-You can also specify weight for edges and calculate the distance based on different calculation algorithm for weigth. See details by `help("distances")`. 
+You can also specify weight for edges and calculate the distance based on different calculation algorithm for weigth. See details by `help("distances")`.  
+
 ### Transitivity
 Transitivity measures the probability that the adjacent vertices of a vertex are connected. This is sometimes also called the clustering coefficient, a proxy to determine how well connected the graph is
 
@@ -210,8 +211,6 @@ plot(g1)
 g2 = make_ring(10)
 transitivity(g2)
 plot(g2)
-
-# 
 ```
 
 There are multiple different types of transivity can be calculated (weighted or unweigthed). Also, the transivity can be calcualted locally for a subgraph by specifying vertex ids. See details by `help("transitivity")`

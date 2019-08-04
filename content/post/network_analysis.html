@@ -1,7 +1,7 @@
 ---
 title: "Network Analysis in R"
-author: "Chun Su"
-date: "2017-07-27"
+author: "Sckinta"
+date: "2019-07-27"
 categories: ["r"]
 tags: ["network"]
 output: 
@@ -26,6 +26,7 @@ output:
 <li><a href="#summarize-graph-statistics">summarize graph statistics</a><ul>
 <li><a href="#degree-and-strength">Degree and strength</a></li>
 <li><a href="#distance">Distance</a></li>
+<li><a href="#transitivity">Transitivity</a></li>
 </ul></li>
 </ul>
 </div>
@@ -61,17 +62,17 @@ edge_list</code></pre>
 <pre class="r"><code>m = as.matrix(edge_list)
 g = graph_from_edgelist(m,directed = TRUE)
 g</code></pre>
-<pre><code>## IGRAPH dc7f654 D--- 4 5 -- 
-## + edges from dc7f654:
+<pre><code>## IGRAPH dfdbf2d D--- 4 5 -- 
+## + edges from dfdbf2d:
 ## [1] 1-&gt;2 2-&gt;3 2-&gt;4 3-&gt;2 4-&gt;1</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/edgelist-1.png" width="672" /></p>
 <p>If the edge is given in a single vector, the default make_graph will use the order of vector to make one-mode graph. It means that the first edge points from the first element to the second, the second edge from the third to the fourth, etc.</p>
 <pre class="r"><code>g = make_graph(letters[1:10], directed = T)
 g</code></pre>
-<pre><code>## IGRAPH 61c5e81 DN-- 10 5 -- 
+<pre><code>## IGRAPH 5eaffa3 DN-- 10 5 -- 
 ## + attr: name (v/c)
-## + edges from 61c5e81 (vertex names):
+## + edges from 5eaffa3 (vertex names):
 ## [1] a-&gt;b c-&gt;d e-&gt;f g-&gt;h i-&gt;j</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/make_graph_from_edgeVector-1.png" width="672" /></p>
@@ -95,9 +96,9 @@ adj_matrix</code></pre>
 ## [10,]    0    1    0    0    0    0    0    0    0     0</code></pre>
 <pre class="r"><code>g = graph_from_adjacency_matrix(adj_matrix, mode = &quot;undirected&quot;, weighted = T)
 g</code></pre>
-<pre><code>## IGRAPH 5963666 U-W- 10 12 -- 
+<pre><code>## IGRAPH 2a02a30 U-W- 10 12 -- 
 ## + attr: weight (e/n)
-## + edges from 5963666:
+## + edges from 2a02a30:
 ##  [1] 1-- 2 1-- 3 1-- 4 1-- 5 1-- 8 2-- 4 2-- 6 2--10 3-- 4 6-- 9 7-- 9
 ## [12] 8-- 9</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
@@ -120,10 +121,10 @@ relations &lt;- data.frame(
   )
 g &lt;- graph_from_data_frame(relations, directed=TRUE, vertices=actors)
 g</code></pre>
-<pre><code>## IGRAPH 21e571c DN-- 5 6 -- 
+<pre><code>## IGRAPH 4de17ed DN-- 5 6 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 21e571c (vertex names):
+## + edges from 4de17ed (vertex names):
 ## [1] Bob      -&gt;Alice Cecil    -&gt;Bob   Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
@@ -140,9 +141,9 @@ g</code></pre>
 set.seed(12)
 g &lt;- sample_gnp(10, 0.3)
 g</code></pre>
-<pre><code>## IGRAPH fa902a0 U--- 10 11 -- Erdos renyi (gnp) graph
+<pre><code>## IGRAPH 175e0aa U--- 10 11 -- Erdos renyi (gnp) graph
 ## + attr: name (g/c), type (g/c), loops (g/l), p (g/n)
-## + edges from fa902a0:
+## + edges from 175e0aa:
 ##  [1] 2-- 5 3-- 5 5-- 6 4-- 7 3-- 8 6-- 8 1-- 9 3-- 9 8-- 9 3--10 8--10</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/gnp-1.png" width="672" /></p>
@@ -150,9 +151,9 @@ g</code></pre>
 set.seed(123)
 g &lt;- sample_gnm(10, 15)
 g</code></pre>
-<pre><code>## IGRAPH d53e63a U--- 10 15 -- Erdos renyi (gnm) graph
+<pre><code>## IGRAPH cacb31e U--- 10 15 -- Erdos renyi (gnm) graph
 ## + attr: name (g/c), type (g/c), loops (g/l), m (g/n)
-## + edges from d53e63a:
+## + edges from cacb31e:
 ##  [1] 1-- 2 1-- 4 2-- 4 3-- 4 5-- 6 2-- 7 3-- 7 5-- 7 2-- 8 3-- 8 6-- 8
 ## [12] 1-- 9 4-- 9 5--10 9--10</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
@@ -257,7 +258,11 @@ distances(g, mode=&quot;all&quot;)</code></pre>
 mean_distance(g)</code></pre>
 <pre><code>## [1] 1.666667</code></pre>
 <p>The small world phenomenon also known as six degrees of separation. Two individual people on Earth are just six people “distance” from each other.</p>
-<p>You can also specify weight for edges and calculate the distance based on different calculation algorithm for weigth. See details by <code>help(&quot;distances&quot;)</code>. ### Transitivity Transitivity measures the probability that the adjacent vertices of a vertex are connected. This is sometimes also called the clustering coefficient, a proxy to determine how well connected the graph is</p>
+<p>You can also specify weight for edges and calculate the distance based on different calculation algorithm for weigth. See details by <code>help(&quot;distances&quot;)</code>.</p>
+</div>
+<div id="transitivity" class="section level3">
+<h3>Transitivity</h3>
+<p>Transitivity measures the probability that the adjacent vertices of a vertex are connected. This is sometimes also called the clustering coefficient, a proxy to determine how well connected the graph is</p>
 <pre class="r"><code># two extreme classes -- full graph and ring graph
 g1 = make_full_graph(10)
 transitivity(g1)</code></pre>
@@ -269,7 +274,6 @@ transitivity(g2)</code></pre>
 <pre><code>## [1] 0</code></pre>
 <pre class="r"><code>plot(g2)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/Transitivity-2.png" width="672" /></p>
-<pre class="r"><code># </code></pre>
 <p>There are multiple different types of transivity can be calculated (weighted or unweigthed). Also, the transivity can be calcualted locally for a subgraph by specifying vertex ids. See details by <code>help(&quot;transitivity&quot;)</code></p>
 </div>
 </div>

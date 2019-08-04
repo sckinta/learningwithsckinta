@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>About Hugo on Learning With Sckinta</title>
+    <title>About on Learning With Sckinta</title>
     <link>/about/</link>
-    <description>Recent content in About Hugo on Learning With Sckinta</description>
+    <description>Recent content in About on Learning With Sckinta</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 09 Apr 2014 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 04 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/about/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Hi I&#39;m Sckinta</title>
+      <link>/about/about/</link>
+      <pubDate>Sun, 04 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/about/about/</guid>
+      <description>I am Chun (Sckinta) and I am currently a bioinformatics scientist at the Children’s Hospital of Philadelphia. Originally from China, I moved to the U.S. in 2011 and completed my PhD in Biology at the University of Virginia in 2017. Starting as a Perl programmer, I picked up R and Python on my own by taking online courses and local meetup workshops. I enjoy learning new programming skills and believe learning is a life-time mission and practice makes perfect.</description>
+    </item>
     
   </channel>
 </rss>

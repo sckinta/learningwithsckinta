@@ -6,27 +6,27 @@
     <description>Recent content on Learning With Sckinta</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 27 Jul 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 04 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Network Analysis in R</title>
-      <link>/post/network_analysis/</link>
-      <pubDate>Thu, 27 Jul 2017 00:00:00 +0000</pubDate>
+      <title>Hi I&#39;m Sckinta</title>
+      <link>/about/</link>
+      <pubDate>Sun, 04 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/post/network_analysis/</guid>
-      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship.</description>
+      <guid>/about/</guid>
+      <description>I am Chun (Sckinta) and I am currently a bioinformatics scientist at the Children’s Hospital of Philadelphia. Originally from China, I moved to the U.S. in 2011 and completed my PhD in Biology at the University of Virginia in 2017. Starting as a Perl programmer, I picked up R and Python on my own by taking online courses and local meetup workshops. I enjoy learning new programming skills and believe learning is a life-time mission and practice makes perfect.</description>
     </item>
     
     <item>
-      <title>About</title>
-      <link>/about/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <title>Network Analysis in R</title>
+      <link>/post/network_analysis/</link>
+      <pubDate>Sat, 27 Jul 2019 00:00:00 +0000</pubDate>
       
-      <guid>/about/</guid>
-      <description>Sckinta Chun, also known as Sckinta online, is a bioinformatics scientist at the Children’s Hospital of Philadelphia, where she explores the influence of the molecular regulatory architecture on the genetic susceptibility for childhood diseases by analyzing genomics data. She completed her PhD in Biology at the University of Virginia, studying a family of parasitic plants that infect crops in Africa. She uses R extensively for statistical analysis and data visualization in her research.</description>
+      <guid>/post/network_analysis/</guid>
+      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance Transitivity    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship.</description>
     </item>
     
   </channel>
