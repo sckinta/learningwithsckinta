@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>R on Learning With Sckinta</title>
+    <title>r on Learning With Sckinta</title>
     <link>/categories/r/</link>
-    <description>Recent content in R on Learning With Sckinta</description>
+    <description>Recent content in r on Learning With Sckinta</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
+    <lastBuildDate>Thu, 27 Jul 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/blog/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>Network Analysis in R</title>
+      <link>/post/network_analysis/</link>
+      <pubDate>Thu, 27 Jul 2017 00:00:00 +0000</pubDate>
       
-      <guid>/blog/2015-07-23-r-rmarkdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <guid>/post/network_analysis/</guid>
+      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship.</description>
     </item>
     
   </channel>
