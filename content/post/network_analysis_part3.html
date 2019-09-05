@@ -1,0 +1,252 @@
+---
+title: "Network visualization (part3)"
+author: "Sckinta"
+date: "2019-09-04"
+categories: ["r"]
+tags: ["network"]
+output: 
+  blogdown::html_page:
+          toc: false
+---
+
+
+
+<p>In this part3 of network analysis series, I will focus on the network work visualization.</p>
+<p>Network visualization are supported by two aspects — the aestheic part of network elements (aka, vertices and edges) and layout of network. There are multiple packages available for these aspects. I will focus on the basic igraph plot (more like base R plot) and the application of ggraph (comparable to ggplot2)</p>
+<div id="aesthetics-of-network-elements" class="section level1">
+<h1>Aesthetics of network elements</h1>
+<p>The aesthetics of both vertices and edges can be manipulated at color, transparency. Specially for vertices, we can also manipulate its shape, size and fill. For edges, we can manipulate its width/thickness, linetype, arrow and so on. Here, use simple example “actors” to show you how to present aesthetics using <code>igraph</code> default plot and <code>ggraph</code></p>
+<pre class="r"><code>actors &lt;- data.frame(
+  name=c(&quot;Alice&quot;, &quot;Bob&quot;, &quot;Cecil&quot;, &quot;David&quot;,&quot;Esmeralda&quot;),
+  age=c(48,33,45,34,21),
+  gender=c(&quot;F&quot;,&quot;M&quot;,&quot;F&quot;,&quot;M&quot;,&quot;F&quot;))
+relations &lt;- data.frame(
+  from=c(&quot;Bob&quot;, &quot;Cecil&quot;, &quot;Cecil&quot;, &quot;David&quot;,&quot;David&quot;, &quot;Esmeralda&quot;),
+  to=c(&quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;, &quot;Alice&quot;, &quot;Bob&quot;, &quot;Alice&quot;),
+  same.dept=c(FALSE,FALSE,TRUE,FALSE,FALSE,TRUE),
+  friendship=c(4,5,5,2,1,1), 
+  advice=c(4,5,5,4,2,3)
+  )
+g &lt;- graph_from_data_frame(relations, directed=TRUE, vertices=actors)</code></pre>
+<div id="vertice-aesthetics" class="section level2">
+<h2>Vertice aesthetics</h2>
+<p>Specify aesthetics in vertex attribute</p>
+<pre class="r"><code># make female and male color different
+v = as_data_frame(g, what=&quot;vertice&quot;) %&gt;% tbl_df %&gt;% 
+  mutate(color=case_when(gender==&quot;F&quot; ~ &quot;red&quot;, gender==&quot;M&quot; ~ &quot;blue&quot;))
+g = g %&gt;% set_vertex_attr(&quot;color&quot;, value=v$color)
+plot(g)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/vertice_aes_igraph-1.png" width="672" /></p>
+<pre class="r"><code># make age as size
+v = v %&gt;% 
+  mutate(size=case_when(age &lt; 30 ~ 10, age &lt; 40 &amp; age &gt;30 ~ 20, age &gt; 40 ~ 30))
+g = g %&gt;% set_vertex_attr(&quot;size&quot;, value=v$size)
+plot(g)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/vertice_aes_igraph-2.png" width="672" /></p>
+<p>The methods mentioned above can also be done by specify in <code>plot()</code>. One quick example below show the shape aesthetics. Check igraph valid shape names by <code>names(igraph:::.igraph.shapes)</code></p>
+<pre class="r"><code># make gender as shape
+v = v %&gt;% 
+  mutate(shape=case_when(gender==&quot;F&quot; ~ &quot;circle&quot;, gender==&quot;M&quot; ~ &quot;rectangle&quot;))
+
+plot(g, vertex.shape=v$shape)
+legend(&#39;topleft&#39;,legend=unique(v$gender),pch=c(21, 22),pt.bg=c(&quot;red&quot;,&quot;blue&quot;))</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/vertice_aes_igraph2-1.png" width="672" /></p>
+<p>Be aware that the aesthetics specified by attributes can be overwritten by specifying in <code>plot()</code>. In addition, those aesthetics can also be used to apply to all vertices like <code>plot(g, vertex.shape=&quot;rectangle&quot;)</code>. The attributes to be manipulated in igraph (using base R) are limited. To find all the plotting attributes, try <code>?plot.igraph</code> or go to <a href="https://igraph.org/r/doc/plot.common.html" class="uri">https://igraph.org/r/doc/plot.common.html</a></p>
+<p>We can also draw attention to certain nodes by <code>mark.groups</code> in plot</p>
+<pre class="r"><code># mark dept
+g = g %&gt;% set_vertex_attr(&quot;dept&quot;,value=c(&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;)) %&gt;% 
+  set_edge_attr(&quot;same.dept&quot;,value=c(F,F,T,F,T,T))
+v = as_data_frame(g, &quot;vertices&quot;)
+plot(g, 
+     mark.groups=list(
+       unlist(v %&gt;% filter(dept==&quot;sale&quot;) %&gt;% select(name)),
+       unlist(v %&gt;% filter(dept==&quot;IT&quot;) %&gt;% select(name))
+       ), 
+     mark.col=c(&quot;#C5E5E7&quot;,&quot;#ECD89A&quot;), mark.border=NA)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/mark.groups-1.png" width="672" /></p>
+<p><code>ggraph</code> is a ggplot version of graph plotting. Using graph object as input, it can convert vertice attributes to plot attribute automatically or manually.</p>
+<pre class="r"><code>v = v %&gt;% 
+  mutate(age_range=case_when(age &lt; 30 ~ 20, age &lt; 40 &amp; age &gt;30 ~ 30, age &gt; 40 ~ 40))
+g = g %&gt;% set_vertex_attr(&quot;age_range&quot;, value=v$age_range)
+ggraph(g, layout = &quot;kk&quot;) +
+  geom_node_point(aes(size=age_range, color=gender), alpha=0.5) +
+  geom_node_text(aes(label=name)) + 
+  geom_edge_link() +
+  scale_size_continuous(breaks=c(20,30,40), range = c(2, 6)) +
+  theme_void() </code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/vertice_aes_ggraph-1.png" width="672" /></p>
+<p>Almost all the ggplots theme, scale functions are available for ggraph. More details refer to <a href="https://www.rdocumentation.org/packages/ggraph/versions/1.0.2" class="uri">https://www.rdocumentation.org/packages/ggraph/versions/1.0.2</a></p>
+</div>
+<div id="edge-aesthetics" class="section level2">
+<h2>Edge aesthetics</h2>
+<p>Similar to vertex aesthetics, edge plotting aesthetics can be manipulated both igraph default plotting and ggraph plotting</p>
+<pre class="r"><code># use linetype present whether come from same department, and line width presents friendship
+e = as_data_frame(g, what=&quot;edges&quot;) %&gt;% tbl_df %&gt;% 
+  mutate(width=friendship) %&gt;% 
+  mutate(lty=ifelse(same.dept,1,2))
+plot(
+  g %&gt;% set_edge_attr(&quot;width&quot;,value=e$width) %&gt;% set_edge_attr(&quot;lty&quot;,value=e$lty),
+  edge.arrow.size=0.8,
+  edge.curved=T
+)
+legend(&quot;topleft&quot;, legend=unique(v$gender),pch=21,pt.bg=c(&quot;red&quot;,&quot;blue&quot;), title=&quot;gender&quot;, box.lty=0)
+legend(&quot;left&quot;,legend=unique(e$same.dept),lty=c(1,2), title = &quot;same.dept&quot;,box.lty=0)
+legend(&quot;topright&quot;, legend=sort(unique(e$friendship)), lwd=sort(unique(e$friendship)), title=&quot;friendship&quot;, box.lty=0)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/edge_aesthetics_igraph-1.png" width="672" /></p>
+<p>Using ggraph to show edges attribute is much easier.</p>
+<pre class="r"><code>ggraph(g, layout=&quot;kk&quot;) +
+  geom_edge_link(aes(edge_width=friendship, edge_linetype=same.dept), arrow = arrow(angle=5, length = unit(0.3, &quot;inches&quot;))) +
+  geom_node_point(aes(color=gender), size=6) +
+  geom_node_text(aes(label=name), nudge_y = -0.1, nudge_x = -0.1) +
+  scale_edge_width(range = c(1, 2)) +
+  theme_void() </code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/edge_aesthetics_ggraph-1.png" width="672" /></p>
+</div>
+<div id="facet" class="section level2">
+<h2>Facet</h2>
+<p>One big advantage of ggraph is using facet. It can be <code>facet_edges</code> or <code>facet_nodes</code> or <code>facet_graph</code>. Here I will only show example of facet_nodes</p>
+<pre class="r"><code>g = g %&gt;% set_vertex_attr(&quot;dept&quot;,value=c(&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;)) %&gt;% 
+  set_edge_attr(&quot;same.dept&quot;,value=c(F,F,T,F,T,T))
+
+#  facet based on the dept
+ggraph(g, layout=&quot;kk&quot;) +
+  facet_nodes(~dept, drop = F) +
+  geom_edge_link(aes(edge_width=friendship, linetype=same.dept), arrow = arrow(angle=5, length = unit(0.3, &quot;inches&quot;))) +
+  geom_node_point(aes(color=gender), size=6) +
+  geom_node_text(aes(label=name), nudge_y = -0.1, nudge_x = -0.1) +
+  scale_edge_width(range = c(1, 2))</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/facet_nodes-1.png" width="672" /></p>
+</div>
+</div>
+<div id="layout" class="section level1">
+<h1>Layout</h1>
+<p>There are many layouts available for both igraph and ggraph pacakges. Igraph provides a huge amount of layouts. <a href="https://igraph.org/r/doc/layout_.html" class="uri">https://igraph.org/r/doc/layout_.html</a></p>
+<ul>
+<li><strong>Standard layouts</strong>
+<ul>
+<li><strong>bipartite</strong>: minimize edge-crossings in a simple two-row (or column) layout for bipartite graphs.</li>
+<li><strong>star</strong>: place one node in the center and the rest equidistantly around it. <code>as_star()</code></li>
+<li><strong>circle</strong>: place nodes in a circle in the order of their index. Consider using layout_igraph_linear with circular=TRUE for more control. <code>in_circle()</code></li>
+<li><strong>nicely</strong>: default, tries to pick an appropriate layout. <code>nicely</code></li>
+<li><strong>dh</strong>: uses Davidson and Harels simulated annealing algorithm to place nodes. <code>with_dh()</code></li>
+<li><strong>gem</strong>: place nodes on the plane using the GEM force-directed layout algorithm. <code>with_gem</code></li>
+<li><strong>graphopt</strong>: uses the Graphopt algorithm based on alternating attraction and repulsion to place nodes. <code>with_graphopt()</code></li>
+<li><strong>grid</strong>:place nodes on a rectangular grid. <code>on_grid()</code></li>
+<li><strong>mds</strong>: perform a multidimensional scaling of nodes using either the shortest path or a user supplied distance. <code>with_mds()</code></li>
+<li><strong>sphere</strong>: place nodes uniformly on a sphere - less relevant for 2D visualizations of networks. <code>with_sphere()</code></li>
+<li><strong>randomly</strong>: places nodes uniformly random. <code>randomly</code></li>
+<li><strong>fr</strong>: places nodes according to the force-directed algorithm of Fruchterman and Reingold. <code>with_fr()</code></li>
+<li><strong>kk</strong>: uses the spring-based algorithm by Kamada and Kawai to place nodes. <code>with_kk()</code></li>
+<li><strong>drl</strong>: uses the force directed algorithm from the DrL toolbox to place nodes. <code>with_drl()</code></li>
+<li><strong>lgl</strong>: uses the algorithm from Large Graph Layout to place nodes. See with_lgl <code>with_lgl()</code></li>
+</ul></li>
+<li><strong>Hierarchical layouts</strong>
+<ul>
+<li><strong>tree</strong>: uses the Reingold-Tilford algorithm to place the nodes below their parent with the parent centered above its children. <code>as_tree()</code></li>
+<li><strong>sugiyama</strong>: designed for directed acyclic graphs (that is, hierarchies where multiple parents are allowed) it minimizes the number of crossing edges.</li>
+</ul></li>
+</ul>
+<p>Here we are going to show an example how to switch standard layout using the same data</p>
+<pre class="r"><code>par(mfrow=c(2,3))
+# star layout -- help determine center
+coords &lt;- layout_(g, as_star())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;start&quot;)
+
+# circle layout
+coords &lt;- layout_(g, in_circle())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;circle&quot;)
+
+# grid
+coords &lt;- layout_(g, on_grid())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;grid&quot;)
+
+# nicely
+coords &lt;- layout_(g, nicely())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;nicely&quot;)
+
+# kk
+coords &lt;- layout_(g, with_kk())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;Kamada and Kawai(kk)&quot;)
+
+# fr
+coords &lt;- layout_(g, with_fr())
+plot(g, layout = coords, edge.arrow.size=0.4)
+title(&quot;force-directed(fr)&quot;)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/layout_igraph-1.png" width="672" /></p>
+<p>Hierarchical layouts can plot data in layer. Here show example how to use sugiyama layout</p>
+<pre class="r"><code># make different dept nodes at different node
+g = g %&gt;% set_vertex_attr(&quot;dept&quot;,value=c(&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;,&quot;IT&quot;,&quot;sale&quot;)) %&gt;% 
+  set_edge_attr(&quot;same.dept&quot;,value=c(F,F,T,F,T,T))
+
+v = as_data_frame(g, &quot;vertices&quot;) %&gt;% tbl_df %&gt;% 
+  mutate(layer=ifelse(dept==&quot;sale&quot;,1,2))
+
+e = as_data_frame(g, what=&quot;edges&quot;) %&gt;% tbl_df %&gt;% 
+  mutate(width=friendship) %&gt;% 
+  mutate(lty=ifelse(same.dept,1,2))
+
+g = g %&gt;% set_edge_attr(&quot;width&quot;,value=e$width) %&gt;% set_edge_attr(&quot;lty&quot;,value=e$lty)
+
+lay1 &lt;-  layout_with_sugiyama(g, layers=v$layer, attributes=&quot;all&quot;)
+
+plot(lay1$extd_graph, edge.curved=T)
+legend(&quot;topleft&quot;, legend=unique(v$gender),pch=21,pt.bg=c(&quot;red&quot;,&quot;blue&quot;), title=&quot;gender&quot;, box.lty=0)
+legend(&quot;left&quot;,legend=unique(e$same.dept),lty=c(1,2), title = &quot;same.dept&quot;,box.lty=0)
+legend(&quot;topright&quot;, legend=sort(unique(e$friendship)), lwd=sort(unique(e$friendship)), title=&quot;friendship&quot;, box.lty=0)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/sugiyama_layout-1.png" width="672" /></p>
+<p><code>ggraph</code> can use all the layout mentioned above by specifying it in <code>ggraph(g, layout=...)</code>. Besides, ggraph has addtional useful layout.</p>
+<ul>
+<li>dendrogram: dendrogram layout not only take in graph object but also dendrogram object (<code>as.dendrogram(hclust(dist(...)))</code>). ggraph will automatically convert dendrogram to igraph by <code>den_to_igraph</code>. It ususally plots using <code>geom_edge_diagonal()</code> or <code>geom_edge_elbow()</code></li>
+</ul>
+<pre class="r"><code>den &lt;- as.dendrogram(hclust(dist(mtcars)))
+p1 = ggraph(den, &#39;dendrogram&#39;) + 
+    geom_edge_diagonal() +
+    geom_node_text(aes(label=label), angle=90, nudge_y=-30, size=3) +
+  theme_void()
+p2 = ggraph(den, &#39;dendrogram&#39;, circular = TRUE) + 
+    geom_edge_elbow() +
+    geom_node_text(aes(label=label), angle=45, size=2) +
+  coord_fixed()+
+  theme_void()
+grid.arrange(p1,p2,ncol=2)</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/dendrogram-1.png" width="672" /></p>
+<ul>
+<li>hive: make nodes group into a axis and connecting axis instead.</li>
+</ul>
+<pre class="r"><code>V(g)$age_range = factor(V(g)$age_range)
+
+ggraph(g, &#39;hive&#39;, axis = &#39;age_range&#39;, sort.by = &#39;age&#39;) + 
+    geom_edge_hive(aes(color = factor(same.dept), edge_width=friendship)) + 
+    geom_axis_hive(aes(color = age_range), size = 3, label = FALSE) + 
+    coord_fixed() +
+  scale_edge_width(range=c(1,3))</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/hive-1.png" width="672" /></p>
+<ul>
+<li>linear: make nodes only the same line so that arc connections were made</li>
+</ul>
+<pre class="r"><code>ggraph(g, layout = &#39;linear&#39;, sort.by = &#39;age&#39;) + 
+    geom_edge_arc(aes(color = factor(same.dept), edge_alpha=friendship)) +
+  geom_node_point(aes(color=gender), size=4, alpha=0.5) +
+  geom_node_text(aes(label=name), angle=45) +
+  theme_void() +
+  scale_edge_alpha(range=c(0.3,1))</code></pre>
+<p><img src="/post/network_analysis_part3_files/figure-html/linear_arc-1.png" width="672" /></p>
+<p>More functions about ggraph refer to <a href="https://www.rdocumentation.org/packages/ggraph/versions/1.0.2" class="uri">https://www.rdocumentation.org/packages/ggraph/versions/1.0.2</a></p>
+</div>
+<div id="other-packages-for-graph-visualization" class="section level1">
+<h1>other packages for graph visualization</h1>
+<p>There are many other packages available for graph visualization and network analysis. In this series, I will only list the link here for the further reference. I may come back to further this topic in the future when necessary.</p>
+<p><strong>Network analysis tool</strong>:<br />
+Statnet: <a href="https://statnet.org/trac/wiki" class="uri">https://statnet.org/trac/wiki</a></p>
+<p><strong>Network visualization</strong>:<br />
+ggnet: <a href="https://briatte.github.io/ggnet/" class="uri">https://briatte.github.io/ggnet/</a></p>
+<p><strong>Interactive network</strong> :<br />
+visNetwork: <a href="https://datastorm-open.github.io/visNetwork/" class="uri">https://datastorm-open.github.io/visNetwork/</a><br />
+jstree: <a href="https://bwlewis.github.io/rthreejs/" class="uri">https://bwlewis.github.io/rthreejs/</a><br />
+Ndtv: <a href="http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.html" class="uri">http://statnet.csde.washington.edu/workshops/SUNBELT/current/ndtv/ndtv_workshop.html</a></p>
+</div>

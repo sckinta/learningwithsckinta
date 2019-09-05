@@ -18,7 +18,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="/" />
 
-<meta property="og:updated_time" content="2019-08-04T00:00:00+00:00" />
+<meta property="og:updated_time" content="2019-09-04T00:00:00+00:00" />
 
   <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Learning With Sckinta"/>
@@ -160,17 +160,17 @@
   <header>
   <div class="title">
     
-        <h2><a href="/post/network_analysis/">Network Analysis in R</a></h2>
+        <h2><a href="/post/network_analysis_part3/">Network visualization (part3)</a></h2>
     
     
 </div>
   <div class="meta">
-    <time class="published" datetime="2019-07-27 00:00:00 &#43;0000 UTC">
-      July 27, 2019
+    <time class="published" datetime="2019-09-04 00:00:00 &#43;0000 UTC">
+      September 4, 2019
     </time>
     <span class="author">Sckinta</span>
     
-        <p>9 minute read</p>
+        <p>7 minute read</p>
     
   </div>
 </header>
@@ -178,7 +178,127 @@
   
 
   
-  <p>Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It can be applied to many fields, like computer science, linguistics, social science, and biology, and useful for any systematic studies on individual relationship. <a href="https://en.wikipedia.org/wiki/Graph_theory">wiki</a></p>
+  <p>In this part3 of network analysis series, I will focus on the network work visualization.</p>
+  <footer>
+    <a href="/post/network_analysis_part3/" class="button big">Read more</a>
+    <ul class="stats">
+  
+    
+    
+      <li class="categories">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/categories/r">r</a></li>
+          
+        </ul>
+      </li>
+    
+  
+  
+    
+    
+      <li class="tags">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/tags/network">network</a></li>
+          
+        </ul>
+      </li>
+    
+  
+</ul>
+
+  </footer>
+</article>
+
+        
+          <article class="post">
+  <header>
+  <div class="title">
+    
+        <h2><a href="/post/network_analysis_part2-2/">Network analysis part2</a></h2>
+    
+    
+</div>
+  <div class="meta">
+    <time class="published" datetime="2019-08-24 00:00:00 &#43;0000 UTC">
+      August 24, 2019
+    </time>
+    <span class="author">Sckinta</span>
+    
+        <p>8 minute read</p>
+    
+  </div>
+</header>
+
+  
+
+  
+  <pre class="r"><code>library(igraph)
+library(tidyverse)
+library(ggraph)
+library(gridExtra)</code></pre>
+<p>In last post, we cover the basic components of IGRAPH objects and how to manipulate IGRAPH. You may notice that most of those manipulation do not really require a IGRAPH object to play with. However, in this post, you will realize the advantage of using IGRAPH in network analysis and how operation on IGRAPH object is much easier than using data.frame when doing network analysis.</p>
+  <footer>
+    <a href="/post/network_analysis_part2-2/" class="button big">Read more</a>
+    <ul class="stats">
+  
+    
+    
+      <li class="categories">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/categories/r">r</a></li>
+          
+        </ul>
+      </li>
+    
+  
+  
+    
+    
+      <li class="tags">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/tags/network">network</a></li>
+          
+        </ul>
+      </li>
+    
+  
+</ul>
+
+  </footer>
+</article>
+
+        
+          <article class="post">
+  <header>
+  <div class="title">
+    
+        <h2><a href="/post/network_analysis/">Network Analysis in R (part1)</a></h2>
+    
+    
+</div>
+  <div class="meta">
+    <time class="published" datetime="2019-07-11 00:00:00 &#43;0000 UTC">
+      July 11, 2019
+    </time>
+    <span class="author">Sckinta</span>
+    
+        <p>14 minute read</p>
+    
+  </div>
+</header>
+
+  
+
+  
+  <p>Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. <a href="https://en.wikipedia.org/wiki/Graph_theory">wiki</a></p>
   <footer>
     <a href="/post/network_analysis/" class="button big">Read more</a>
     <ul class="stats">
@@ -238,8 +358,8 @@
 
         </section>
         <header>
-          <h1><a href="/post/network_analysis/">Network Analysis in R</a></h1>
-          <time class="published" datetime="">July 27, 2019</time>
+          <h1><a href="/post/network_analysis_part3/">Network visualization (part3)</a></h1>
+          <time class="published" datetime="">September 4, 2019</time>
         </header>
       </article>
       
@@ -250,7 +370,29 @@
         </section>
         <header>
           <h1><a href="/post/">Post</a></h1>
-          <time class="published" datetime="">July 27, 2019</time>
+          <time class="published" datetime="">September 4, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis_part2-2/">Network analysis part2</a></h1>
+          <time class="published" datetime="">August 24, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis/">Network Analysis in R (part1)</a></h1>
+          <time class="published" datetime="">July 11, 2019</time>
         </header>
       </article>
       
@@ -271,7 +413,7 @@
           
           <li>
             
-              <a href="/categories/r/">r<span class="count">1</span></a>
+              <a href="/categories/r/">r<span class="count">3</span></a>
             
           
           </li>

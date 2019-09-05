@@ -6,18 +6,39 @@
     <description>Recent content in network on Learning With Sckinta</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 27 Jul 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 04 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/network/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Network Analysis in R</title>
+      <title>Network visualization (part3)</title>
+      <link>/post/network_analysis_part3/</link>
+      <pubDate>Wed, 04 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/network_analysis_part3/</guid>
+      <description>In this part3 of network analysis series, I will focus on the network work visualization.
+Network visualization are supported by two aspects — the aestheic part of network elements (aka, vertices and edges) and layout of network. There are multiple packages available for these aspects. I will focus on the basic igraph plot (more like base R plot) and the application of ggraph (comparable to ggplot2)
+Aesthetics of network elements The aesthetics of both vertices and edges can be manipulated at color, transparency.</description>
+    </item>
+    
+    <item>
+      <title>Network analysis part2</title>
+      <link>/post/network_analysis_part2-2/</link>
+      <pubDate>Sat, 24 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/network_analysis_part2-2/</guid>
+      <description>library(igraph) library(tidyverse) library(ggraph) library(gridExtra) In last post, we cover the basic components of IGRAPH objects and how to manipulate IGRAPH. You may notice that most of those manipulation do not really require a IGRAPH object to play with. However, in this post, you will realize the advantage of using IGRAPH in network analysis and how operation on IGRAPH object is much easier than using data.frame when doing network analysis.</description>
+    </item>
+    
+    <item>
+      <title>Network Analysis in R (part1)</title>
       <link>/post/network_analysis/</link>
-      <pubDate>Sat, 27 Jul 2019 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 11 Jul 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/network_analysis/</guid>
-      <description>Glossaries Create a graph From edge list From adjacent matrix From data.frame Create random graph  Extract vertex and edge and their attributes vertex edges  summarize graph statistics Degree and strength Distance Transitivity    Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architechural view of individual actor connections. It can be applied to many fields, like computer science, linguistics, social science, and biology, and useful for any systematic studies on individual relationship.</description>
+      <description>Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. wiki
+This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.</description>
     </item>
     
   </channel>
