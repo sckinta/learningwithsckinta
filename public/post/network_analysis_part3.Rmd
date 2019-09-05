@@ -20,7 +20,7 @@ library(ggraph)
 library(gridExtra)
 ```
 
-In this part3 of network analysis series, I will focus on the network work visualization.  
+In the previous two posts ([part1](https://learniningwithsckinta.netlify.com/post/network_analysis), [part2](https://learniningwithsckinta.netlify.com/post/network_analysis_part2-2)), we discussed about IGRAPH object and how to manipulate, measure and cluster it. In this part3 of network analysis series, I will focus on the network work visualization.  
 
 Network visualization are supported by two aspects --- the aestheic part of network elements (aka, vertices and edges) and layout of network. There are multiple packages available for these aspects. I will focus on the basic igraph plot (more like base R plot) and the application of ggraph (comparable to ggplot2)
 

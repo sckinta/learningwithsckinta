@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. [wiki](https://en.wikipedia.org/wiki/Graph_theory)
 
-This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.
+This post plus following two posts ([part2](https://learniningwithsckinta.netlify.com/post/network_analysis_part2-2/), [part3](https://learniningwithsckinta.netlify.com/post/network_analysis_part3/)) aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.
 
 # Glossaries
 

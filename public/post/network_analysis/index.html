@@ -11,12 +11,12 @@
   <meta name="generator" content="Hugo 0.56.3" />
   <meta itemprop="name" content="Network Analysis in R (part1)">
 <meta itemprop="description" content="Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. wiki
-This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.">
+This post plus following two posts (part2, part3) aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.">
 
 
 <meta itemprop="datePublished" content="2019-07-11T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-07-11T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="2822">
+<meta itemprop="wordCount" content="2823">
 
 
 
@@ -24,7 +24,7 @@ This post plus a few following posts aim to introduce the termilogy that are fre
 
   <meta property="og:title" content="Network Analysis in R (part1)" />
 <meta property="og:description" content="Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. wiki
-This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization." />
+This post plus following two posts (part2, part3) aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/post/network_analysis/" />
 <meta property="article:published_time" content="2019-07-11T00:00:00+00:00" />
@@ -33,7 +33,7 @@ This post plus a few following posts aim to introduce the termilogy that are fre
   <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Network Analysis in R (part1)"/>
 <meta name="twitter:description" content="Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. wiki
-This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization."/>
+This post plus following two posts (part2, part3) aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization."/>
 <meta name="twitter:site" content="@SophiaSu0205"/>
 
   
@@ -201,7 +201,7 @@ This post plus a few following posts aim to introduce the termilogy that are fre
 
 
 <p>Network analysis is to study the complexity of the inter-relationships between actors of all sorts and provides an architectural view of individual actor connections. It has been applied to many fields, like social network and gene network, and useful for any systematic studies on individual relationship. <a href="https://en.wikipedia.org/wiki/Graph_theory">wiki</a></p>
-<p>This post plus a few following posts aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.</p>
+<p>This post plus following two posts (<a href="https://learniningwithsckinta.netlify.com/post/network_analysis_part2-2/">part2</a>, <a href="https://learniningwithsckinta.netlify.com/post/network_analysis_part3/">part3</a>) aim to introduce the termilogy that are frequently used in network and public available R tools that are useful for network analysis and visualization.</p>
 <div id="glossaries" class="section level1">
 <h1>Glossaries</h1>
 <p><strong>Vertex</strong>: is the node of network<br />
@@ -216,9 +216,9 @@ This post plus a few following posts aim to introduce the termilogy that are fre
 <div id="igraph-object" class="section level1">
 <h1>IGRAPH object</h1>
 <p><strong>IGRAPH object</strong> is a R object defined in <code>igraph</code> package.</p>
-<pre><code>## IGRAPH a8b6e98 DN-- 10 5 -- 
+<pre><code>## IGRAPH f8eaf8f DN-- 10 5 -- 
 ## + attr: name (v/c)
-## + edges from a8b6e98 (vertex names):
+## + edges from f8eaf8f (vertex names):
 ## [1] a-&gt;b c-&gt;d e-&gt;f g-&gt;h i-&gt;j</code></pre>
 <p>As mentioned in glassory part, graph is made with <em>vertices</em> and <em>edges</em>, and can be <em>directed</em> or <em>undirected</em>. The first line of IGRAPH <code>IGRAPH 7352909 DN-- 10 5 --</code> means a graph with id <code>7352909</code> is directed (<code>D</code>) and named (<code>N</code>) containing <code>10</code> vertices and <code>5</code> edges. The second line <code>+ attr: name (v/c)</code> indicates the attributes associated with vertex (<code>v</code>) and edge (<code>e</code>). In this example, only vertex attributes <code>name</code> were listed. It is character variable (<code>c</code>). The third and fourth line of IGRAPH literally print what edges look like. In our case, since graph is directed, the arrow shows the direction of edge.</p>
 <p>It is worth to mention that name of edges can be listed by vertices name in a <code>from|to</code> format. In most cases, names are the default attributes for vertex and can be used just like index to extract information directly from IGRAPH. We will discuss this in detail in “graph subset” session in this post.</p>
@@ -253,17 +253,17 @@ edge_list</code></pre>
 <pre class="r"><code>m = as.matrix(edge_list)
 g = graph_from_edgelist(m,directed = TRUE)
 g</code></pre>
-<pre><code>## IGRAPH 8df3528 D--- 4 5 -- 
-## + edges from 8df3528:
+<pre><code>## IGRAPH b46da56 D--- 4 5 -- 
+## + edges from b46da56:
 ## [1] 1-&gt;2 2-&gt;3 2-&gt;4 3-&gt;2 4-&gt;1</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/edgelist-1.png" width="672" /></p>
 <p>If the edge is given in a single vector, the default make_graph will use the order of vector to make one-mode graph. It means that the first edge points from the first element to the second, the second edge from the third to the fourth, etc.</p>
 <pre class="r"><code>g = make_graph(letters[1:10], directed = T)
 g</code></pre>
-<pre><code>## IGRAPH d75761a DN-- 10 5 -- 
+<pre><code>## IGRAPH 56999bd DN-- 10 5 -- 
 ## + attr: name (v/c)
-## + edges from d75761a (vertex names):
+## + edges from 56999bd (vertex names):
 ## [1] a-&gt;b c-&gt;d e-&gt;f g-&gt;h i-&gt;j</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/make_graph_from_edgeVector-1.png" width="672" /></p>
@@ -289,9 +289,9 @@ adj_matrix</code></pre>
 ## j 0 1 0 0 0 0 0 0 0 0</code></pre>
 <pre class="r"><code>g = graph_from_adjacency_matrix(adj_matrix, mode = &quot;undirected&quot;, weighted = T)
 g</code></pre>
-<pre><code>## IGRAPH bf06489 UNW- 10 12 -- 
+<pre><code>## IGRAPH 1f44bdf UNW- 10 12 -- 
 ## + attr: name (v/c), weight (e/n)
-## + edges from bf06489 (vertex names):
+## + edges from 1f44bdf (vertex names):
 ##  [1] a--b a--c a--d a--e a--h b--d b--f b--j c--d f--i g--i h--i</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/adjacentMatrix-1.png" width="672" /></p>
@@ -313,10 +313,10 @@ relations &lt;- data.frame(
   )
 g &lt;- graph_from_data_frame(relations, directed=TRUE, vertices=actors)
 g</code></pre>
-<pre><code>## IGRAPH 498fdc1 DN-- 5 6 -- 
+<pre><code>## IGRAPH 0d77d57 DN-- 5 6 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 498fdc1 (vertex names):
+## + edges from 0d77d57 (vertex names):
 ## [1] Bob      -&gt;Alice Cecil    -&gt;Bob   Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
 <pre class="r"><code>plot(g)</code></pre>
@@ -333,9 +333,9 @@ g</code></pre>
 set.seed(12)
 gr &lt;- sample_gnp(10, 0.3)
 gr</code></pre>
-<pre><code>## IGRAPH 9baac75 U--- 10 11 -- Erdos renyi (gnp) graph
+<pre><code>## IGRAPH 0953651 U--- 10 11 -- Erdos renyi (gnp) graph
 ## + attr: name (g/c), type (g/c), loops (g/l), p (g/n)
-## + edges from 9baac75:
+## + edges from 0953651:
 ##  [1] 2-- 5 3-- 5 5-- 6 4-- 7 3-- 8 6-- 8 1-- 9 3-- 9 8-- 9 3--10 8--10</code></pre>
 <pre class="r"><code>plot(gr)</code></pre>
 <p><img src="/post/network_analysis_files/figure-html/gnp-1.png" width="672" /></p>
@@ -343,9 +343,9 @@ gr</code></pre>
 set.seed(123)
 gr &lt;- sample_gnm(10, 15)
 gr</code></pre>
-<pre><code>## IGRAPH b28e5e1 U--- 10 15 -- Erdos renyi (gnm) graph
+<pre><code>## IGRAPH 0fc6668 U--- 10 15 -- Erdos renyi (gnm) graph
 ## + attr: name (g/c), type (g/c), loops (g/l), m (g/n)
-## + edges from b28e5e1:
+## + edges from 0fc6668:
 ##  [1] 1-- 2 1-- 4 2-- 4 3-- 4 5-- 6 2-- 7 3-- 7 5-- 7 2-- 8 3-- 8 6-- 8
 ## [12] 1-- 9 4-- 9 5--10 9--10</code></pre>
 <pre class="r"><code>plot(gr)</code></pre>
@@ -400,48 +400,48 @@ igraph::as_data_frame(g, what = &quot;edges&quot;)</code></pre>
 <p>Vertices and edges can be added to existing graph by <code>add_()</code> or <code>+</code>. Please be aware that vertices of added new edges must be from known vertices already in the graph.</p>
 <pre class="r"><code># add vertices 
 g %&gt;% add_vertices(2, name=c(&quot;Lisa&quot;,&quot;Zack&quot;)) # the first argument is number of vertex</code></pre>
-<pre><code>## IGRAPH bcba1a6 DN-- 7 6 -- 
+<pre><code>## IGRAPH 398359e DN-- 7 6 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from bcba1a6 (vertex names):
+## + edges from 398359e (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
 <pre class="r"><code>g + vertices(c(&quot;Lisa&quot;,&quot;Zack&quot;))</code></pre>
-<pre><code>## IGRAPH c323d2d DN-- 7 6 -- 
+<pre><code>## IGRAPH aa3b2bb DN-- 7 6 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from c323d2d (vertex names):
+## + edges from aa3b2bb (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
 <pre class="r"><code># add connected edges (even number of vertices). The vertices must be from known vertices already in the graph 
 g %&gt;% add_edges(c(&quot;Alice&quot;,&quot;Bob&quot;))</code></pre>
-<pre><code>## IGRAPH 5f25e64 DN-- 5 7 -- 
+<pre><code>## IGRAPH 9cc7cde DN-- 5 7 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 5f25e64 (vertex names):
+## + edges from 9cc7cde (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice Alice    -&gt;Bob</code></pre>
 <pre class="r"><code>g + edge(c(&quot;Alice&quot;,&quot;Bob&quot;))</code></pre>
-<pre><code>## IGRAPH cc8cf63 DN-- 5 7 -- 
+<pre><code>## IGRAPH e239321 DN-- 5 7 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from cc8cf63 (vertex names):
+## + edges from e239321 (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice Alice    -&gt;Bob</code></pre>
 <pre class="r"><code># add paths. The vertices must be from known vertices already in the graph 
 g + path(&quot;Alice&quot;,&quot;Bob&quot;,&quot;Cecil&quot;)</code></pre>
-<pre><code>## IGRAPH 75f441d DN-- 5 8 -- 
+<pre><code>## IGRAPH 65fa86e DN-- 5 8 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 75f441d (vertex names):
+## + edges from 65fa86e (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice Alice    -&gt;Bob   Bob      -&gt;Cecil</code></pre>
 <pre class="r"><code># If a new vertex needs to be added to current graph, using add graph method instead 
 g + make_graph(c(&quot;Alice&quot;,&quot;Bob&quot;,&quot;Bob&quot;,&quot;Melisa&quot;))</code></pre>
-<pre><code>## IGRAPH f121270 DN-- 6 7 -- 
+<pre><code>## IGRAPH a395669 DN-- 6 7 -- 
 ## + attr: age (v/n), gender (v/c), name (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from f121270 (vertex names):
+## + edges from a395669 (vertex names):
 ## [1] Esmeralda-&gt;Alice  David    -&gt;Bob    David    -&gt;Alice  Cecil    -&gt;Alice 
 ## [5] Bob      -&gt;Melisa Bob      -&gt;David  Alice    -&gt;Bob</code></pre>
 <p>Delete can be done in a similar way.</p>
@@ -452,33 +452,33 @@ vertex_df = g %&gt;% igraph::as_data_frame(what=&quot;vertices&quot;) %&gt;%
         dplyr::filter(age &lt; 30)
 # remove vertices by index number 
 g %&gt;% delete_vertices(vertex_df$index)</code></pre>
-<pre><code>## IGRAPH 56d1d86 DN-- 4 5 -- 
+<pre><code>## IGRAPH 9eda70d DN-- 4 5 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 56d1d86 (vertex names):
+## + edges from 9eda70d (vertex names):
 ## [1] Alice-&gt;Bob   Bob  -&gt;David Cecil-&gt;Alice David-&gt;Alice David-&gt;Bob</code></pre>
 <pre class="r"><code># remove vertice by name 
 g %&gt;% delete_vertices(vertex_df$name)</code></pre>
-<pre><code>## IGRAPH 1d8891d DN-- 4 5 -- 
+<pre><code>## IGRAPH 8ba2768 DN-- 4 5 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 1d8891d (vertex names):
+## + edges from 8ba2768 (vertex names):
 ## [1] Alice-&gt;Bob   Bob  -&gt;David Cecil-&gt;Alice David-&gt;Alice David-&gt;Bob</code></pre>
 <pre class="r"><code>### remove the edges with friendship &lt;= 1 
 edge_df = g %&gt;% igraph::as_data_frame(what=&quot;edges&quot;) %&gt;% dplyr::tbl_df() %&gt;% mutate(index=row_number()) %&gt;% mutate(name=paste(from,to,sep=&quot;|&quot;)) %&gt;% filter(friendship &lt;= 1)
 # remove vertice by index
 g %&gt;% delete_edges(edge_df$index)</code></pre>
-<pre><code>## IGRAPH ac13765 DN-- 5 4 -- 
+<pre><code>## IGRAPH 73af2a7 DN-- 5 4 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from ac13765 (vertex names):
+## + edges from 73af2a7 (vertex names):
 ## [1] Alice-&gt;Bob   Bob  -&gt;David Cecil-&gt;Alice David-&gt;Alice</code></pre>
 <pre class="r"><code># remove vertice by name 
 g %&gt;% delete_edges(edge_df$name)</code></pre>
-<pre><code>## IGRAPH 3ff1882 DN-- 5 4 -- 
+<pre><code>## IGRAPH 2fe6471 DN-- 5 4 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 3ff1882 (vertex names):
+## + edges from 2fe6471 (vertex names):
 ## [1] Alice-&gt;Bob   Bob  -&gt;David Cecil-&gt;Alice David-&gt;Alice</code></pre>
 <p>The attributes of vertices and edges can be added or deleted to existing graph by <code>set_vertex_attr()</code>/<code>set_edge_attr()</code> or <code>delete_vertex_attr()</code>/<code>delete_edge_attr()</code>.</p>
 <pre class="r"><code># add a new attr &quot;relationship&quot; for people in the same dept
@@ -486,10 +486,10 @@ edge_df = g %&gt;% igraph::as_data_frame(what=&quot;edges&quot;) %&gt;%
   mutate(relationship=ifelse(same.dept,&quot;collegue&quot;,NA))
 
 g %&gt;% set_edge_attr(&quot;relationship&quot;, which(!is.na(edge_df$relationship)), edge_df$relationship[!is.na(edge_df$relationship)])</code></pre>
-<pre><code>## IGRAPH 94afe75 DN-- 5 6 -- 
+<pre><code>## IGRAPH 1a372fe DN-- 5 6 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n), relationship (e/c)
-## + edges from 94afe75 (vertex names):
+## + edges from 1a372fe (vertex names):
 ## [1] Alice    -&gt;Bob   Bob      -&gt;David Cecil    -&gt;Alice David    -&gt;Alice
 ## [5] David    -&gt;Bob   Esmeralda-&gt;Alice</code></pre>
 </div>
@@ -521,25 +521,25 @@ plot(g4, edge.arrow.size=.4)</code></pre>
 <p>The subgraph can be induced by either vertex or edge names/index. The edge names are in the form <code>from|to</code>.</p>
 <pre class="r"><code># induce a subgraph using a list of vertices
 igraph::induced_subgraph(g, v=c(&quot;Alice&quot;,&quot;Bob&quot;,&quot;Cecil&quot;))</code></pre>
-<pre><code>## IGRAPH 2c3fe7c DN-- 3 2 -- 
+<pre><code>## IGRAPH a1a10b8 DN-- 3 2 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 2c3fe7c (vertex names):
+## + edges from a1a10b8 (vertex names):
 ## [1] Alice-&gt;Bob   Cecil-&gt;Alice</code></pre>
 <pre class="r"><code># induce a subgraph using edges
 igraph::subgraph.edges(g, c(&quot;Alice|Bob&quot;,&quot;David|Bob&quot;,&quot;Cecil|Alice&quot;), delete.vertices = TRUE)</code></pre>
-<pre><code>## IGRAPH 6766283 DN-- 4 3 -- 
+<pre><code>## IGRAPH 98bc346 DN-- 4 3 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 6766283 (vertex names):
+## + edges from 98bc346 (vertex names):
 ## [1] Alice-&gt;Bob   Cecil-&gt;Alice David-&gt;Bob</code></pre>
 <pre class="r"><code># induce a subgraph using edges attribute (friendship score stronger than 3)
 e1 = E(g)[E(g)$friendship &gt; 3]
 subgraph.edges(g, e1, delete.vertices = TRUE)</code></pre>
-<pre><code>## IGRAPH 31b4eba DN-- 4 3 -- 
+<pre><code>## IGRAPH 3e20dad DN-- 4 3 -- 
 ## + attr: name (v/c), age (v/n), gender (v/c), same.dept (e/l),
 ## | friendship (e/n), advice (e/n)
-## + edges from 31b4eba (vertex names):
+## + edges from 3e20dad (vertex names):
 ## [1] Alice-&gt;Bob   Bob  -&gt;David Cecil-&gt;Alice</code></pre>
 </div>
 <div id="relationship-between-known-nodes" class="section level2">
@@ -550,39 +550,39 @@ are_adjacent(g3,&quot;Jim&quot;, &quot;Zack&quot;)</code></pre>
 <pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code># pathes to connect 
 all_shortest_paths(g3, &quot;Jim&quot;,&quot;Zack&quot;)$res[[1]] # return a igraph.vs</code></pre>
-<pre><code>## + 4/9 vertices, named, from a83a231:
+<pre><code>## + 4/9 vertices, named, from 6d221ea:
 ## [1] Jim     David   Charlie Zack</code></pre>
 <pre class="r"><code>all_simple_paths(g3, &quot;Jim&quot;, &quot;Zack&quot;) # return a list of igraph.vs</code></pre>
 <pre><code>## [[1]]
-## + 4/9 vertices, named, from a83a231:
+## + 4/9 vertices, named, from 6d221ea:
 ## [1] Jim     David   Charlie Zack   
 ## 
 ## [[2]]
-## + 5/9 vertices, named, from a83a231:
+## + 5/9 vertices, named, from 6d221ea:
 ## [1] Jim     David   Lisa    Charlie Zack</code></pre>
 <pre class="r"><code>all_simple_paths(g3, &quot;Jim&quot;, &quot;Zack&quot;, mode = &quot;all&quot;)  # regardless of direction</code></pre>
 <pre><code>## [[1]]
-## + 6/9 vertices, named, from a83a231:
+## + 6/9 vertices, named, from 6d221ea:
 ## [1] Jim       David     Alice     Bob       Esmeralda Zack     
 ## 
 ## [[2]]
-## + 5/9 vertices, named, from a83a231:
+## + 5/9 vertices, named, from 6d221ea:
 ## [1] Jim       David     Alice     Esmeralda Zack     
 ## 
 ## [[3]]
-## + 6/9 vertices, named, from a83a231:
+## + 6/9 vertices, named, from 6d221ea:
 ## [1] Jim       David     Bob       Alice     Esmeralda Zack     
 ## 
 ## [[4]]
-## + 5/9 vertices, named, from a83a231:
+## + 5/9 vertices, named, from 6d221ea:
 ## [1] Jim       David     Bob       Esmeralda Zack     
 ## 
 ## [[5]]
-## + 4/9 vertices, named, from a83a231:
+## + 4/9 vertices, named, from 6d221ea:
 ## [1] Jim     David   Charlie Zack   
 ## 
 ## [[6]]
-## + 5/9 vertices, named, from a83a231:
+## + 5/9 vertices, named, from 6d221ea:
 ## [1] Jim     David   Lisa    Charlie Zack</code></pre>
 <p>In next post, I will discuss how to use igraph package to measure and cluster network and use the igraph object to its fullest potential.</p>
 </div>
