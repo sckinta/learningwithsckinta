@@ -1,2 +1,2 @@
 # learningwithsckinta
-netlify blog
+netlify blog https://learniningwithsckinta.netlify.com
