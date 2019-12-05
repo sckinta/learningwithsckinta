@@ -1,0 +1,339 @@
+---
+title: 'From R to Python: Data Wrangling (part1)'
+author: "Sckinta"
+date: "2019-10-22"
+categories: ["r", "python"]
+tags: ["dataWrangle", "R2Py"]
+output: 
+  blogdown::html_page:
+          toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book ["R for Data Science"](https://r4ds.had.co.nz/). The book is  mainly an intro to the `tidyverse`, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular `tidyverse` user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages. 
+
+However, as more and more data scientists choose to use Python at their work, juggling between R and python becomes more demanding in a collaborative working environment. At least, we need to understand what our coworkers with different language preference write in their code. The most frequently used modules/packages for data wrangling are `numpy` and `pandas`. They share a lot of "grammars" with R and worth to pick it up by making connection to something we are familiar with (like me, learn R first :)). 
+
+In this post, I am going to write code for each data wrangling task side by side, starting with what I am familiar with (`tidyverse`), then run corresponding python code to perform the same task. The aim is to catch up "grammar" fast and to keep a note for future search.
+
+*Note: since the blog is maintained by R Markdown, all the python code was driven by Python engine for R Markdown using R package `reticulate`.*
+
+```{r lib, warning=F,message=F}
+library(reticulate)
+use_condaenv("py36")
+```
+
+## 0. "I/O"
+
+How to generate object from scratch? (tibble) How to convert base R/python object to package/module-specific object and vice versa? (tbl, as.data.frame, pull)
+
+**R version:**
+```{r io, warning=F, message=F}
+library(tidyverse)
+
+# read from file to tibble
+mtcars = read_delim("mtcars.tsv", delim = "\t")
+class(mtcars)
+
+# create tibble from scratch
+set.seed(123)
+rdf = tibble(
+  a = runif(10, min=0, max=1),
+  b = rnorm(10,3,5),
+  c = base::sample(c("Y","N"), 10, replace = T, prob=c(0.4, 0.5))
+)
+rdf
+
+# convert data.frame to tibble
+data("mtcars")
+mtcars = mtcars %>% rownames_to_column("model") %>% tbl_df
+class(mtcars)
+
+# convert tibble column to a vector
+models = mtcars %>% pull(model)
+models
+
+# convert tibble to data.frame
+mtcars = mtcars %>% select(-model) %>% as.data.frame() 
+rownames(mtcars) = models
+class(mtcars)
+```
+```{r load_data4, echo=F, warning=F, message=F}
+data("mtcars")
+mtcars = mtcars %>% rownames_to_column("model") %>% tbl_df
+```
+```{r io2, warning=F, message=F}
+# convert tibble to data.frame (easy way!)
+mtcars %>% column_to_rownames("model")
+class(mtcars)
+```
+
+**Python version:**
+```{python, eval=F}
+import pandas as pd
+import numpy as np
+
+# read from file to DataFrame
+mtcars = pd.read_csv('mtcars.tsv', sep="\t")
+
+# create DataFrame from scratch (dictionary)
+np.random.seed(123)
+rdf = pd.DataFrame({
+  "a": np.random.uniform(0,1,10),
+  "b": 5*np.random.randn(10) + 3,
+  "c": np.random.choice(["Y","N"], 10, replace=True, p=[0.5, 0.5])
+}
+)
+
+# convert DataFrame column to np.array
+mtcars["model"].head()
+
+# convert DataFrame to dict
+rdf.to_dict()
+```
+
+## 1. Subset data.frame
+
+Subsetting data.frame can be taken from two dimensition -- by column and by row. Usually, a tidy dataset put feature/variable as column and sample as row. We `select` subset of columns/variables and `filter`/`slice` out a subset of rows
+
+For both R and python, the column subsetting can be done by 1) name 2) index and row subsetting can be by 1) name 2)index and 3) boolean value
+
+#### 1.1 Subset by columns (select)
+
+**R version:**
+```{r load_data3, echo=F, warning=F, message=F}
+data(mtcars)
+mtcars = mtcars %>%
+  rownames_to_column("model") %>% tbl_df
+```
+```{r sub_col, warning=F, message=F}
+# select column by index
+mtcars %>% select(c(12,1))
+
+# select column by name (model,mpg)
+mtcars %>% select(model,mpg)
+
+# select column by partial name -- matches can use regex but contains do not
+mtcars %>% select(matches("^m"))
+mtcars %>% select(contains("m"))
+
+```
+
+**Python version:**
+```{python, eval=F}
+# DataFrame subset by column name using either df.columnName or df["columnName"]
+mtcars.mpg
+mtcars[["model","mpg"]]
+
+# subset column by index. python index start with 0 and right end is exclusive. df.iloc[,]
+mtcars.iloc[:,[11,0]]
+mtcars.iloc[:,0:2]
+
+# subset column by regex match. df.filter(regex = "") 
+mtcars.filter(regex = "^m")
+mtcars.filter(regex = "m")
+```
+
+#### 1.2 Subset by rows (filter and slice)
+
+**R version:**
+```{r load_data2, echo=F, warning=F, message=F}
+data(mtcars)
+mtcars = mtcars %>%
+  rownames_to_column("model") %>% tbl_df
+```
+```{r sub_row, warning=F, message=F}
+# filter by boolean
+mtcars %>% filter(mpg > 20)
+
+# filter/slice by index
+mtcars %>% slice(5:n())
+mtcars %>% filter(between(row_number(),5,n()))
+
+# filter at multiple variables ()
+mtcars %>% filter_if(is.numeric, all_vars(. > 0))
+
+```
+
+**Python version:**
+```{python, eval=F}
+### subset rows by boolean
+mtcars[mtcars["mpg"]>20]
+
+### filter/slice by index using df.iloc[,]
+(nrow, ncol) = mtcars.shape
+mtcars.iloc[4:nrow,:]
+
+### filter at multiple variables () -- all numeric value is biger than 0
+# first find columns are numeric
+col_boolean = np.logical_or(mtcars.dtypes=="int64", mtcars.dtypes=="float64")
+selected_cols = mtcars.columns[col_boolean]
+
+# loop through each col to remove rows which value <= 0
+tmp_mtcars = mtcars
+for col in selected_cols:
+    tmp_mtcars = tmp_mtcars[tmp_mtcars[col] > 0]
+
+tmp_mtcars
+
+```
+
+## 2. Add row or column
+As mentioned, a tidy dataset put feature/variable as column and sample as row.. Adding row means adding a new data point which can be done by `add_rows`, while adding column means adding a new variable which usually takes calculation from other variables in the data.frame
+
+**R version:**
+```{r load_data1, echo=F, warning=F, message=F}
+data(mtcars)
+mtcars = mtcars %>%
+  rownames_to_column("model") %>% tbl_df
+```
+```{r add_row, warning=F, message=F}
+# add row to specific location
+mtcars %>% add_row(model="Honda Pilot", cyl=6, am=0, .before=2)
+
+# add column to explicitly specificy what variable "am" means
+mtcars %>% 
+  mutate(transmission=case_when(am==1~"manual", am==0~"automatic"))
+
+```
+
+**Python version:**
+```{python, eval=F}
+# add row at second row
+insert_line = pd.DataFrame({'model':'Honda Pilot' , 'cyl' : 6, 'am':0}, index=[0.5])
+tmp_mtcars = mtcars.append(
+    insert_line, 
+    ignore_index=False
+)
+tmp_mtcars = tmp_mtcars.sort_index().reset_index(drop=True)
+tmp_mtcars.head()
+
+# add column to explicitly specify what variable "am" means
+def add_transmission(df):
+    if (df["am"]==1):
+        return "manual"
+    if (df["am"]==0):
+        return "automatic"
+
+tmp_mtcars = mtcars
+tmp_mtcars["transmission"] = tmp_mtcars.apply(add_transmission, axis=1)
+tmp_mtcars.head()
+```
+
+## 3. Pivot data.frame
+
+Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. There is rumor saying that Tidyverse gonna change `spread` and `gather` to `pivot` which is the Python function for pivoting data.frame. 
+
+Here is an example of untidy data (`untidy_mtcars1`) in which one variable (tranmission) is split to two columns (manual, automatic).
+
+```{r untidy1, echo=F, warning=F, message=F}
+data(mtcars)
+untidy_mtcars1 =  mtcars %>% 
+  rownames_to_column("model") %>% tbl_df %>% 
+  mutate(transmission=case_when(am==1~"manual", am==0~"automatic")) %>% 
+  select(-am) %>% 
+  mutate(value=1) %>% 
+  spread(key=transmission, value=value) %>% 
+  mutate_if(function(x){any(is.na(x))}, function(x){ifelse(is.na(x),0,x)})
+
+write.table(untidy_mtcars1, file="untidy_mtcars1.tsv", sep="\t", quote=F, row.names = F)
+untidy_mtcars1
+```
+
+Here is another example of untidy data (`untidy_mtcars2`) in which two variables (gear, carb) are put together as one variable (number) while using "gearCarb" to indicate which it refers to
+
+```{r untidy2, echo=F, warning=F, message=F}
+data(mtcars)
+untidy_mtcars2 =  mtcars %>% 
+  rownames_to_column("model") %>% tbl_df %>% 
+  gather(key="gearCarb", value="number", gear, carb) %>% 
+  arrange(model)
+
+write.table(untidy_mtcars2, file="untidy_mtcars2.tsv", sep="\t", quote=F, row.names = F)
+untidy_mtcars1
+```
+
+To tidy the untidy_mtcars1 we `gather` two variables (manual and automatic) to one variable (transmission). In table shape, it is "wide to long" pivotting. To tidy the untidy_mtcars2, we `spread` "number" column to "gear" and "carb". This is "long to wide" pivotting
+
+#### 3.1 long to wide (spread)
+
+**R version:**
+```{r load_data0, echo=F, warning=F, message=F}
+untidy_mtcars2 = read_delim("untidy_mtcars2.tsv", delim="\t")
+```
+```{r spread, warning=F, message=F}
+untidy_mtcars2 %>% spread(key=gearCarb, value=number)
+
+```
+
+**Python version:**
+```{python, eval=F}
+# read untidy_mtcars2
+untidy_mtcars2 = pd.read_csv("untidy_mtcars2.tsv",sep="\t")
+
+# set unique column as index
+tmp_untidy_mtcars2 = untidy_mtcars2.set_index("model")
+
+# pivot function will only return the "columns" and "values" column not all. 
+## remove the columns which are going to be pivot and make other columns unique
+## pivot using columns and values. index here is optional since we already set "model" as index
+## merge first half and pivot half together using index column "model"
+tidy_mtcars2 = pd.merge(
+    tmp_untidy_mtcars2.drop(columns = ["gearCarb","number"]).drop_duplicates(),
+    tmp_untidy_mtcars2.pivot(columns="gearCarb", values="number"),
+    how = "left", on="model"
+).reset_index()
+
+tidy_mtcars2.head()
+```
+
+#### 3.2 wide to long (gather)
+
+**R version:**
+```{r load_data, echo=F, warning=F, message=F}
+untidy_mtcars1 = read_delim("untidy_mtcars1.tsv", delim="\t")
+```
+```{r gather, warning=F, message=F}
+untidy_mtcars1 %>% 
+  gather(key="transmission", value="value", automatic, manual) %>% 
+  filter(value==1) %>% 
+  select(-value)
+
+```
+
+**Python version:**
+```{python, eval=F}
+untidy_mtcars1 = pd.read_csv("untidy_mtcars1.tsv",sep="\t")
+
+### select columns need to melt as "value_vars"
+value_vars = ["automatic","manual"]
+### make columns that dont need to be changed as "id_vars" 
+id_vars = list(untidy_mtcars1.drop(columns=value_vars).columns)
+### melt -- var_name as where "value_vars" column name will go
+tidy_mtcars1 = pd.melt(
+    untidy_mtcars1, 
+    id_vars=id_vars,
+    value_vars=value_vars,
+    var_name="am",
+    value_name="value"
+)
+### remove not specified the value
+tidy_mtcars1 = tidy_mtcars1[tidy_mtcars1["value"]==1].drop(columns=["value"])
+tidy_mtcars1 = tidy_mtcars1.reset_index(drop=True)
+### convert am value to it used to 
+def change_am(df):
+    if(df["am"]=="automatic"):
+        return 1
+    if(df["am"]=="manual"):
+        return 0
+tidy_mtcars1["am"]=tidy_mtcars1.apply(change_am, axis=1)
+
+tidy_mtcars1.head()
+```
+
+Let's call it a day at this long blog. The part2 will cover the following three parts -- group, table join and accessory functions for data wrangling.
+

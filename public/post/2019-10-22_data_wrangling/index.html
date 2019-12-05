@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8">
+<title>From R to Python: Data Wrangling (part1) - LEARNING WITH SCKINTA</title>
+<meta name="description" content="A learning notebook of programming and data science">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+  <meta name="generator" content="Hugo 0.56.3" />
+  <meta itemprop="name" content="From R to Python: Data Wrangling (part1)">
+<meta itemprop="description" content="Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book “R for Data Science”. The book is mainly an intro to the tidyverse, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular tidyverse user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages.">
+
+
+<meta itemprop="datePublished" content="2019-10-22T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-10-22T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="4002">
+
+
+
+<meta itemprop="keywords" content="dataWrangle,R2Py," />
+
+  <meta property="og:title" content="From R to Python: Data Wrangling (part1)" />
+<meta property="og:description" content="Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book “R for Data Science”. The book is mainly an intro to the tidyverse, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular tidyverse user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/post/2019-10-22_data_wrangling/" />
+<meta property="article:published_time" content="2019-10-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-10-22T00:00:00+00:00" />
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="From R to Python: Data Wrangling (part1)"/>
+<meta name="twitter:description" content="Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book “R for Data Science”. The book is mainly an intro to the tidyverse, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular tidyverse user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages."/>
+<meta name="twitter:site" content="@SophiaSu0205"/>
+
+  
+
+  <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
+  
+    
+      <link rel="stylesheet" href="/css/normalize.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.1.0/css/flag-icon.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css" integrity="sha384-i1LQnF23gykqWXg6jxC2ZbCbUMxyw5gLZY6UiUS98LYV5unm8GWmfkIS6jqJfb4E" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.css" />
+      <link rel="stylesheet" href="/css/main.min.css">
+      <link rel="stylesheet" href="/css/add-on.css">
+    
+  
+  
+  
+  
+  
+</head>
+
+  <body>
+    
+<header id="site-header">
+  <nav id="site-nav">
+    <h1 class="nav-title">
+      <a href="/">
+        
+          
+            post
+          
+        
+      </a>
+    </h1>
+    <menu id="site-nav-menu" class="flyout-menu">
+      
+        <a href="/" class="link"><i class="fas fa-home">&nbsp;</i>Home</a>
+      
+        <a href="/about/" class="link"><i class="far fa-id-card">&nbsp;</i>About</a>
+      
+        <a href="/post/" class="link"><i class="far fa-newspaper">&nbsp;</i>Notebook</a>
+      
+        <a href="/categories/" class="link"><i class="fas fa-sitemap">&nbsp;</i>Categories</a>
+      
+        <a href="/contact/" class="link"><i class="far fa-envelope">&nbsp;</i>Contact</a>
+      
+      <a href="#share-menu" class="share-toggle"><i class="fas fa-share-alt">&nbsp;</i>Share</a>
+      
+
+    </menu>
+    
+
+    <a href="#share-menu" class="share-toggle"><i class="fas fa-share-alt fa-2x">&nbsp;</i></a>
+    
+    <a href="#site-nav" class="nav-toggle"><i class="fas fa-bars fa-2x"></i></a>
+  </nav>
+  
+  
+    <menu id="share-menu" class="flyout-menu">
+      <h1>Share Post</h1>
+      
+
+
+
+
+  
+    
+    <a href="//twitter.com/share?text=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29&amp;url=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" rel="noopener" class="share-btn twitter">
+        <i class="fab fa-twitter"></i><p>&nbsp;Twitter</p>
+      </a>
+  
+
+  
+      <a href="//www.facebook.com/sharer/sharer.php?u=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" rel="noopener" class="share-btn facebook">
+        <i class="fab fa-facebook"></i><p>&nbsp;Facebook</p>
+        </a>
+  
+
+  
+    <a href="//www.reddit.com/submit?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;title=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn reddit">
+          <i class="fab fa-reddit-alien"></i><p>&nbsp;Reddit</p>
+        </a>
+  
+
+  
+        <a href="//www.linkedin.com/shareArticle?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;title=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i><p>&nbsp;LinkedIn</p>
+          </a>
+  
+
+  
+        <a href="//www.pinterest.com/pin/create/button/?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;description=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn pinterest">
+          <i class="fab fa-pinterest-p"></i><p>&nbsp;Pinterest</p>
+        </a>
+  
+
+  
+        <a href="mailto:?subject=Check out this post by %7b%20%20%20%20%20%20%20%20map%5b%5d%7d&amp;body=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" class="share-btn email" data-proofer-ignore>
+          <i class="fas fa-envelope"></i><p>&nbsp;Email</p>
+        </a>
+  
+
+
+    </menu>
+  
+</header>
+
+    <div id="wrapper">
+      <section id="site-intro">
+  <a href="/"><img src="/img/main/lele.jpg" class="circle" width="" alt="Hugo Future Imperfect Slim" /></a>
+  <header>
+    <h1>LEARNING WITH SCKINTA</h1>
+  </header>
+  <main>
+    <p>A LEARNING NOTEBOOK OF PROGRAMMING AND DATA SCIENCE.</p>
+  </main>
+  
+    <footer>
+      <ul class="socnet-icons">
+        
+        <li><a href="//github.com/sckinta" target="_blank" rel="noopener" title="GitHub" class="fab fa-github"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//linkedin.com/in/chun-su-a031087b" target="_blank" rel="noopener" title="LinkedIn" class="fab fa-linkedin"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//twitter.com/SophiaSu0205" target="_blank" rel="noopener" title="Twitter" class="fab fa-twitter"></a></li>
+
+
+
+
+
+
+
+<li><a href="//researchgate.net/profile/Chun_Su" target="_blank" rel="noopener" title="Research Gate"><i class="ai ai-researchgate"></i></a></li>
+
+
+<li><a href="mailto:sckinta@gmail.com" target="_blank" title="Email" class="far fa-envelope"></a></li>
+
+      </ul>
+    </footer>
+  
+</section>
+
+      <main id="site-main">
+        <article class="post">
+  <header>
+  <div class="title">
+    
+        <h2><a href="/post/2019-10-22_data_wrangling/">From R to Python: Data Wrangling (part1)</a></h2>
+    
+    
+</div>
+  <div class="meta">
+    <time class="published" datetime="2019-10-22 00:00:00 &#43;0000 UTC">
+      October 22, 2019
+    </time>
+    <span class="author">Sckinta</span>
+    
+        <p>19 minute read</p>
+    
+  </div>
+</header>
+
+  <section id="socnet-share">
+    
+
+
+
+
+  
+    
+    <a href="//twitter.com/share?text=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29&amp;url=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" rel="noopener" class="share-btn twitter">
+        <i class="fab fa-twitter"></i><p>&nbsp;Twitter</p>
+      </a>
+  
+
+  
+      <a href="//www.facebook.com/sharer/sharer.php?u=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" rel="noopener" class="share-btn facebook">
+        <i class="fab fa-facebook"></i><p>&nbsp;Facebook</p>
+        </a>
+  
+
+  
+    <a href="//www.reddit.com/submit?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;title=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn reddit">
+          <i class="fab fa-reddit-alien"></i><p>&nbsp;Reddit</p>
+        </a>
+  
+
+  
+        <a href="//www.linkedin.com/shareArticle?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;title=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i><p>&nbsp;LinkedIn</p>
+          </a>
+  
+
+  
+        <a href="//www.pinterest.com/pin/create/button/?url=%2fpost%2f2019-10-22_data_wrangling%2f&amp;description=From%20R%20to%20Python%3a%20Data%20Wrangling%20%28part1%29" target="_blank" rel="noopener" class="share-btn pinterest">
+          <i class="fab fa-pinterest-p"></i><p>&nbsp;Pinterest</p>
+        </a>
+  
+
+  
+        <a href="mailto:?subject=Check out this post by %7b%20%20%20%20%20%20%20%20map%5b%5d%7d&amp;body=%2fpost%2f2019-10-22_data_wrangling%2f" target="_blank" class="share-btn email" data-proofer-ignore>
+          <i class="fas fa-envelope"></i><p>&nbsp;Email</p>
+        </a>
+  
+
+
+  </section>
+  
+
+  <div class="content">
+    
+
+
+<p>Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book <a href="https://r4ds.had.co.nz/">“R for Data Science”</a>. The book is mainly an intro to the <code>tidyverse</code>, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular <code>tidyverse</code> user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages.</p>
+<p>However, as more and more data scientists choose to use Python at their work, juggling between R and python becomes more demanding in a collaborative working environment. At least, we need to understand what our coworkers with different language preference write in their code. The most frequently used modules/packages for data wrangling are <code>numpy</code> and <code>pandas</code>. They share a lot of “grammars” with R and worth to pick it up by making connection to something we are familiar with (like me, learn R first :)).</p>
+<p>In this post, I am going to write code for each data wrangling task side by side, starting with what I am familiar with (<code>tidyverse</code>), then run corresponding python code to perform the same task. The aim is to catch up “grammar” fast and to keep a note for future search.</p>
+<p><em>Note: since the blog is maintained by R Markdown, all the python code was driven by Python engine for R Markdown using R package <code>reticulate</code>.</em></p>
+<pre class="r"><code>library(reticulate)
+use_condaenv(&quot;py36&quot;)</code></pre>
+<div id="io" class="section level2">
+<h2>0. “I/O”</h2>
+<p>How to generate object from scratch? (tibble) How to convert base R/python object to package/module-specific object and vice versa? (tbl, as.data.frame, pull)</p>
+<p><strong>R version:</strong></p>
+<pre class="r"><code>library(tidyverse)
+
+# read from file to tibble
+mtcars = read_delim(&quot;mtcars.tsv&quot;, delim = &quot;\t&quot;)
+class(mtcars)</code></pre>
+<pre><code>## [1] &quot;spec_tbl_df&quot; &quot;tbl_df&quot;      &quot;tbl&quot;         &quot;data.frame&quot;</code></pre>
+<pre class="r"><code># create tibble from scratch
+set.seed(123)
+rdf = tibble(
+  a = runif(10, min=0, max=1),
+  b = rnorm(10,3,5),
+  c = base::sample(c(&quot;Y&quot;,&quot;N&quot;), 10, replace = T, prob=c(0.4, 0.5))
+)
+rdf</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##         a      b c    
+##     &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;
+##  1 0.288  11.6   Y    
+##  2 0.788   5.30  Y    
+##  3 0.409  -3.33  Y    
+##  4 0.883  -0.434 Y    
+##  5 0.940   0.772 N    
+##  6 0.0456  9.12  N    
+##  7 0.528   4.80  Y    
+##  8 0.892   5.00  N    
+##  9 0.551   3.55  N    
+## 10 0.457   0.221 N</code></pre>
+<pre class="r"><code># convert data.frame to tibble
+data(&quot;mtcars&quot;)
+mtcars = mtcars %&gt;% rownames_to_column(&quot;model&quot;) %&gt;% tbl_df
+class(mtcars)</code></pre>
+<pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<pre class="r"><code># convert tibble column to a vector
+models = mtcars %&gt;% pull(model)
+models</code></pre>
+<pre><code>##  [1] &quot;Mazda RX4&quot;           &quot;Mazda RX4 Wag&quot;       &quot;Datsun 710&quot;         
+##  [4] &quot;Hornet 4 Drive&quot;      &quot;Hornet Sportabout&quot;   &quot;Valiant&quot;            
+##  [7] &quot;Duster 360&quot;          &quot;Merc 240D&quot;           &quot;Merc 230&quot;           
+## [10] &quot;Merc 280&quot;            &quot;Merc 280C&quot;           &quot;Merc 450SE&quot;         
+## [13] &quot;Merc 450SL&quot;          &quot;Merc 450SLC&quot;         &quot;Cadillac Fleetwood&quot; 
+## [16] &quot;Lincoln Continental&quot; &quot;Chrysler Imperial&quot;   &quot;Fiat 128&quot;           
+## [19] &quot;Honda Civic&quot;         &quot;Toyota Corolla&quot;      &quot;Toyota Corona&quot;      
+## [22] &quot;Dodge Challenger&quot;    &quot;AMC Javelin&quot;         &quot;Camaro Z28&quot;         
+## [25] &quot;Pontiac Firebird&quot;    &quot;Fiat X1-9&quot;           &quot;Porsche 914-2&quot;      
+## [28] &quot;Lotus Europa&quot;        &quot;Ford Pantera L&quot;      &quot;Ferrari Dino&quot;       
+## [31] &quot;Maserati Bora&quot;       &quot;Volvo 142E&quot;</code></pre>
+<pre class="r"><code># convert tibble to data.frame
+mtcars = mtcars %&gt;% select(-model) %&gt;% as.data.frame() 
+rownames(mtcars) = models
+class(mtcars)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code># convert tibble to data.frame (easy way!)
+mtcars %&gt;% column_to_rownames(&quot;model&quot;)</code></pre>
+<pre><code>##                      mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag       21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710          22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+## Hornet 4 Drive      21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+## Hornet Sportabout   18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2
+## Valiant             18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1
+## Duster 360          14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+## Merc 240D           24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+## Merc 230            22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+## Merc 280            19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4
+## Merc 280C           17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4
+## Merc 450SE          16.4   8 275.8 180 3.07 4.070 17.40  0  0    3    3
+## Merc 450SL          17.3   8 275.8 180 3.07 3.730 17.60  0  0    3    3
+## Merc 450SLC         15.2   8 275.8 180 3.07 3.780 18.00  0  0    3    3
+## Cadillac Fleetwood  10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4
+## Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4
+## Chrysler Imperial   14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+## Fiat 128            32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+## Honda Civic         30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+## Toyota Corolla      33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+## Toyota Corona       21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+## Dodge Challenger    15.5   8 318.0 150 2.76 3.520 16.87  0  0    3    2
+## AMC Javelin         15.2   8 304.0 150 3.15 3.435 17.30  0  0    3    2
+## Camaro Z28          13.3   8 350.0 245 3.73 3.840 15.41  0  0    3    4
+## Pontiac Firebird    19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+## Fiat X1-9           27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+## Porsche 914-2       26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+## Lotus Europa        30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+## Ford Pantera L      15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+## Ferrari Dino        19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+## Maserati Bora       15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+## Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</code></pre>
+<pre class="r"><code>class(mtcars)</code></pre>
+<pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code>import pandas as pd
+import numpy as np
+
+# read from file to DataFrame
+mtcars = pd.read_csv(&#39;mtcars.tsv&#39;, sep=&quot;\t&quot;)
+
+# create DataFrame from scratch (dictionary)
+np.random.seed(123)
+rdf = pd.DataFrame({
+  &quot;a&quot;: np.random.uniform(0,1,10),
+  &quot;b&quot;: 5*np.random.randn(10) + 3,
+  &quot;c&quot;: np.random.choice([&quot;Y&quot;,&quot;N&quot;], 10, replace=True, p=[0.5, 0.5])
+}
+)
+
+# convert DataFrame column to np.array
+mtcars[&quot;model&quot;].head()
+
+# convert DataFrame to dict
+rdf.to_dict()</code></pre>
+</div>
+<div id="subset-data.frame" class="section level2">
+<h2>1. Subset data.frame</h2>
+<p>Subsetting data.frame can be taken from two dimensition – by column and by row. Usually, a tidy dataset put feature/variable as column and sample as row. We <code>select</code> subset of columns/variables and <code>filter</code>/<code>slice</code> out a subset of rows</p>
+<p>For both R and python, the column subsetting can be done by 1) name 2) index and row subsetting can be by 1) name 2)index and 3) boolean value</p>
+<div id="subset-by-columns-select" class="section level4">
+<h4>1.1 Subset by columns (select)</h4>
+<p><strong>R version:</strong></p>
+<pre class="r"><code># select column by index
+mtcars %&gt;% select(c(12,1))</code></pre>
+<pre><code>## # A tibble: 32 x 2
+##     carb model            
+##    &lt;dbl&gt; &lt;chr&gt;            
+##  1     4 Mazda RX4        
+##  2     4 Mazda RX4 Wag    
+##  3     1 Datsun 710       
+##  4     1 Hornet 4 Drive   
+##  5     2 Hornet Sportabout
+##  6     1 Valiant          
+##  7     4 Duster 360       
+##  8     2 Merc 240D        
+##  9     2 Merc 230         
+## 10     4 Merc 280         
+## # … with 22 more rows</code></pre>
+<pre class="r"><code># select column by name (model,mpg)
+mtcars %&gt;% select(model,mpg)</code></pre>
+<pre><code>## # A tibble: 32 x 2
+##    model               mpg
+##    &lt;chr&gt;             &lt;dbl&gt;
+##  1 Mazda RX4          21  
+##  2 Mazda RX4 Wag      21  
+##  3 Datsun 710         22.8
+##  4 Hornet 4 Drive     21.4
+##  5 Hornet Sportabout  18.7
+##  6 Valiant            18.1
+##  7 Duster 360         14.3
+##  8 Merc 240D          24.4
+##  9 Merc 230           22.8
+## 10 Merc 280           19.2
+## # … with 22 more rows</code></pre>
+<pre class="r"><code># select column by partial name -- matches can use regex but contains do not
+mtcars %&gt;% select(matches(&quot;^m&quot;))</code></pre>
+<pre><code>## # A tibble: 32 x 2
+##    model               mpg
+##    &lt;chr&gt;             &lt;dbl&gt;
+##  1 Mazda RX4          21  
+##  2 Mazda RX4 Wag      21  
+##  3 Datsun 710         22.8
+##  4 Hornet 4 Drive     21.4
+##  5 Hornet Sportabout  18.7
+##  6 Valiant            18.1
+##  7 Duster 360         14.3
+##  8 Merc 240D          24.4
+##  9 Merc 230           22.8
+## 10 Merc 280           19.2
+## # … with 22 more rows</code></pre>
+<pre class="r"><code>mtcars %&gt;% select(contains(&quot;m&quot;))</code></pre>
+<pre><code>## # A tibble: 32 x 3
+##    model               mpg    am
+##    &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazda RX4          21       1
+##  2 Mazda RX4 Wag      21       1
+##  3 Datsun 710         22.8     1
+##  4 Hornet 4 Drive     21.4     0
+##  5 Hornet Sportabout  18.7     0
+##  6 Valiant            18.1     0
+##  7 Duster 360         14.3     0
+##  8 Merc 240D          24.4     0
+##  9 Merc 230           22.8     0
+## 10 Merc 280           19.2     0
+## # … with 22 more rows</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code># DataFrame subset by column name using either df.columnName or df[&quot;columnName&quot;]
+mtcars.mpg
+mtcars[[&quot;model&quot;,&quot;mpg&quot;]]
+
+# subset column by index. python index start with 0 and right end is exclusive. df.iloc[,]
+mtcars.iloc[:,[11,0]]
+mtcars.iloc[:,0:2]
+
+# subset column by regex match. df.filter(regex = &quot;&quot;) 
+mtcars.filter(regex = &quot;^m&quot;)
+mtcars.filter(regex = &quot;m&quot;)</code></pre>
+</div>
+<div id="subset-by-rows-filter-and-slice" class="section level4">
+<h4>1.2 Subset by rows (filter and slice)</h4>
+<p><strong>R version:</strong></p>
+<pre class="r"><code># filter by boolean
+mtcars %&gt;% filter(mpg &gt; 20)</code></pre>
+<pre><code>## # A tibble: 14 x 12
+##    model         mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazda RX4    21       6 160     110  3.9   2.62  16.5     0     1     4     4
+##  2 Mazda RX4 …  21       6 160     110  3.9   2.88  17.0     0     1     4     4
+##  3 Datsun 710   22.8     4 108      93  3.85  2.32  18.6     1     1     4     1
+##  4 Hornet 4 D…  21.4     6 258     110  3.08  3.22  19.4     1     0     3     1
+##  5 Merc 240D    24.4     4 147.     62  3.69  3.19  20       1     0     4     2
+##  6 Merc 230     22.8     4 141.     95  3.92  3.15  22.9     1     0     4     2
+##  7 Fiat 128     32.4     4  78.7    66  4.08  2.2   19.5     1     1     4     1
+##  8 Honda Civic  30.4     4  75.7    52  4.93  1.62  18.5     1     1     4     2
+##  9 Toyota Cor…  33.9     4  71.1    65  4.22  1.84  19.9     1     1     4     1
+## 10 Toyota Cor…  21.5     4 120.     97  3.7   2.46  20.0     1     0     3     1
+## 11 Fiat X1-9    27.3     4  79      66  4.08  1.94  18.9     1     1     4     1
+## 12 Porsche 91…  26       4 120.     91  4.43  2.14  16.7     0     1     5     2
+## 13 Lotus Euro…  30.4     4  95.1   113  3.77  1.51  16.9     1     1     5     2
+## 14 Volvo 142E   21.4     4 121     109  4.11  2.78  18.6     1     1     4     2</code></pre>
+<pre class="r"><code># filter/slice by index
+mtcars %&gt;% slice(5:n())</code></pre>
+<pre><code>## # A tibble: 28 x 12
+##    model         mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Hornet Spo…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+##  2 Valiant      18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+##  3 Duster 360   14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  4 Merc 240D    24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+##  5 Merc 230     22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+##  6 Merc 280     19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+##  7 Merc 280C    17.8     6  168.   123  3.92  3.44  18.9     1     0     4     4
+##  8 Merc 450SE   16.4     8  276.   180  3.07  4.07  17.4     0     0     3     3
+##  9 Merc 450SL   17.3     8  276.   180  3.07  3.73  17.6     0     0     3     3
+## 10 Merc 450SLC  15.2     8  276.   180  3.07  3.78  18       0     0     3     3
+## # … with 18 more rows</code></pre>
+<pre class="r"><code>mtcars %&gt;% filter(between(row_number(),5,n()))</code></pre>
+<pre><code>## # A tibble: 28 x 12
+##    model         mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Hornet Spo…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+##  2 Valiant      18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+##  3 Duster 360   14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  4 Merc 240D    24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+##  5 Merc 230     22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+##  6 Merc 280     19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+##  7 Merc 280C    17.8     6  168.   123  3.92  3.44  18.9     1     0     4     4
+##  8 Merc 450SE   16.4     8  276.   180  3.07  4.07  17.4     0     0     3     3
+##  9 Merc 450SL   17.3     8  276.   180  3.07  3.73  17.6     0     0     3     3
+## 10 Merc 450SLC  15.2     8  276.   180  3.07  3.78  18       0     0     3     3
+## # … with 18 more rows</code></pre>
+<pre class="r"><code># filter at multiple variables ()
+mtcars %&gt;% filter_if(is.numeric, all_vars(. &gt; 0))</code></pre>
+<pre><code>## # A tibble: 7 x 12
+##   model          mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Datsun 710    22.8     4 108      93  3.85  2.32  18.6     1     1     4     1
+## 2 Fiat 128      32.4     4  78.7    66  4.08  2.2   19.5     1     1     4     1
+## 3 Honda Civic   30.4     4  75.7    52  4.93  1.62  18.5     1     1     4     2
+## 4 Toyota Coro…  33.9     4  71.1    65  4.22  1.84  19.9     1     1     4     1
+## 5 Fiat X1-9     27.3     4  79      66  4.08  1.94  18.9     1     1     4     1
+## 6 Lotus Europa  30.4     4  95.1   113  3.77  1.51  16.9     1     1     5     2
+## 7 Volvo 142E    21.4     4 121     109  4.11  2.78  18.6     1     1     4     2</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code>### subset rows by boolean
+mtcars[mtcars[&quot;mpg&quot;]&gt;20]
+
+### filter/slice by index using df.iloc[,]
+(nrow, ncol) = mtcars.shape
+mtcars.iloc[4:nrow,:]
+
+### filter at multiple variables () -- all numeric value is biger than 0
+# first find columns are numeric
+col_boolean = np.logical_or(mtcars.dtypes==&quot;int64&quot;, mtcars.dtypes==&quot;float64&quot;)
+selected_cols = mtcars.columns[col_boolean]
+
+# loop through each col to remove rows which value &lt;= 0
+tmp_mtcars = mtcars
+for col in selected_cols:
+    tmp_mtcars = tmp_mtcars[tmp_mtcars[col] &gt; 0]
+
+tmp_mtcars</code></pre>
+</div>
+</div>
+<div id="add-row-or-column" class="section level2">
+<h2>2. Add row or column</h2>
+<p>As mentioned, a tidy dataset put feature/variable as column and sample as row.. Adding row means adding a new data point which can be done by <code>add_rows</code>, while adding column means adding a new variable which usually takes calculation from other variables in the data.frame</p>
+<p><strong>R version:</strong></p>
+<pre class="r"><code># add row to specific location
+mtcars %&gt;% add_row(model=&quot;Honda Pilot&quot;, cyl=6, am=0, .before=2)</code></pre>
+<pre><code>## # A tibble: 33 x 12
+##    model         mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazda RX4    21       6  160    110  3.9   2.62  16.5     0     1     4     4
+##  2 Honda Pilot  NA       6   NA     NA NA    NA     NA      NA     0    NA    NA
+##  3 Mazda RX4 …  21       6  160    110  3.9   2.88  17.0     0     1     4     4
+##  4 Datsun 710   22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
+##  5 Hornet 4 D…  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+##  6 Hornet Spo…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+##  7 Valiant      18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+##  8 Duster 360   14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  9 Merc 240D    24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+## 10 Merc 230     22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+## # … with 23 more rows</code></pre>
+<pre class="r"><code># add column to explicitly specificy what variable &quot;am&quot; means
+mtcars %&gt;% 
+  mutate(transmission=case_when(am==1~&quot;manual&quot;, am==0~&quot;automatic&quot;))</code></pre>
+<pre><code>## # A tibble: 32 x 13
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mazd…  21       6  160    110  3.9   2.62  16.5     0     1     4     4
+##  2 Mazd…  21       6  160    110  3.9   2.88  17.0     0     1     4     4
+##  3 Dats…  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
+##  4 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+##  5 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+##  6 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+##  7 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+##  8 Merc…  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+##  9 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+## # … with 22 more rows, and 1 more variable: transmission &lt;chr&gt;</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code># add row at second row
+insert_line = pd.DataFrame({&#39;model&#39;:&#39;Honda Pilot&#39; , &#39;cyl&#39; : 6, &#39;am&#39;:0}, index=[0.5])
+tmp_mtcars = mtcars.append(
+    insert_line, 
+    ignore_index=False
+)
+tmp_mtcars = tmp_mtcars.sort_index().reset_index(drop=True)
+tmp_mtcars.head()
+
+# add column to explicitly specify what variable &quot;am&quot; means
+def add_transmission(df):
+    if (df[&quot;am&quot;]==1):
+        return &quot;manual&quot;
+    if (df[&quot;am&quot;]==0):
+        return &quot;automatic&quot;
+
+tmp_mtcars = mtcars
+tmp_mtcars[&quot;transmission&quot;] = tmp_mtcars.apply(add_transmission, axis=1)
+tmp_mtcars.head()</code></pre>
+</div>
+<div id="pivot-data.frame" class="section level2">
+<h2>3. Pivot data.frame</h2>
+<p>Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. There is rumor saying that Tidyverse gonna change <code>spread</code> and <code>gather</code> to <code>pivot</code> which is the Python function for pivoting data.frame.</p>
+<p>Here is an example of untidy data (<code>untidy_mtcars1</code>) in which one variable (tranmission) is split to two columns (manual, automatic).</p>
+<pre><code>## # A tibble: 32 x 13
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs  gear  carb automatic
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1 Mazd…  21       6  160    110  3.9   2.62  16.5     0     4     4         0
+##  2 Mazd…  21       6  160    110  3.9   2.88  17.0     0     4     4         0
+##  3 Dats…  22.8     4  108     93  3.85  2.32  18.6     1     4     1         0
+##  4 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     3     1         1
+##  5 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     3     2         1
+##  6 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     3     1         1
+##  7 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     3     4         1
+##  8 Merc…  24.4     4  147.    62  3.69  3.19  20       1     4     2         1
+##  9 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     4     2         1
+## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     4     4         1
+## # … with 22 more rows, and 1 more variable: manual &lt;dbl&gt;</code></pre>
+<p>Here is another example of untidy data (<code>untidy_mtcars2</code>) in which two variables (gear, carb) are put together as one variable (number) while using “gearCarb” to indicate which it refers to</p>
+<pre><code>## # A tibble: 32 x 13
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs  gear  carb automatic
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1 Mazd…  21       6  160    110  3.9   2.62  16.5     0     4     4         0
+##  2 Mazd…  21       6  160    110  3.9   2.88  17.0     0     4     4         0
+##  3 Dats…  22.8     4  108     93  3.85  2.32  18.6     1     4     1         0
+##  4 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     3     1         1
+##  5 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     3     2         1
+##  6 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     3     1         1
+##  7 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     3     4         1
+##  8 Merc…  24.4     4  147.    62  3.69  3.19  20       1     4     2         1
+##  9 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     4     2         1
+## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     4     4         1
+## # … with 22 more rows, and 1 more variable: manual &lt;dbl&gt;</code></pre>
+<p>To tidy the untidy_mtcars1 we <code>gather</code> two variables (manual and automatic) to one variable (transmission). In table shape, it is “wide to long” pivotting. To tidy the untidy_mtcars2, we <code>spread</code> “number” column to “gear” and “carb”. This is “long to wide” pivotting</p>
+<div id="long-to-wide-spread" class="section level4">
+<h4>3.1 long to wide (spread)</h4>
+<p><strong>R version:</strong></p>
+<pre class="r"><code>untidy_mtcars2 %&gt;% spread(key=gearCarb, value=number)</code></pre>
+<pre><code>## # A tibble: 32 x 12
+##    model         mpg   cyl  disp    hp  drat    wt  qsec    vs    am  carb  gear
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 AMC Javelin  15.2     8 304     150  3.15  3.44  17.3     0     0     2     3
+##  2 Cadillac F…  10.4     8 472     205  2.93  5.25  18.0     0     0     4     3
+##  3 Camaro Z28   13.3     8 350     245  3.73  3.84  15.4     0     0     4     3
+##  4 Chrysler I…  14.7     8 440     230  3.23  5.34  17.4     0     0     4     3
+##  5 Datsun 710   22.8     4 108      93  3.85  2.32  18.6     1     1     1     4
+##  6 Dodge Chal…  15.5     8 318     150  2.76  3.52  16.9     0     0     2     3
+##  7 Duster 360   14.3     8 360     245  3.21  3.57  15.8     0     0     4     3
+##  8 Ferrari Di…  19.7     6 145     175  3.62  2.77  15.5     0     1     6     5
+##  9 Fiat 128     32.4     4  78.7    66  4.08  2.2   19.5     1     1     1     4
+## 10 Fiat X1-9    27.3     4  79      66  4.08  1.94  18.9     1     1     1     4
+## # … with 22 more rows</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code># read untidy_mtcars2
+untidy_mtcars2 = pd.read_csv(&quot;untidy_mtcars2.tsv&quot;,sep=&quot;\t&quot;)
+
+# set unique column as index
+tmp_untidy_mtcars2 = untidy_mtcars2.set_index(&quot;model&quot;)
+
+# pivot function will only return the &quot;columns&quot; and &quot;values&quot; column not all. 
+## remove the columns which are going to be pivot and make other columns unique
+## pivot using columns and values. index here is optional since we already set &quot;model&quot; as index
+## merge first half and pivot half together using index column &quot;model&quot;
+tidy_mtcars2 = pd.merge(
+    tmp_untidy_mtcars2.drop(columns = [&quot;gearCarb&quot;,&quot;number&quot;]).drop_duplicates(),
+    tmp_untidy_mtcars2.pivot(columns=&quot;gearCarb&quot;, values=&quot;number&quot;),
+    how = &quot;left&quot;, on=&quot;model&quot;
+).reset_index()
+
+tidy_mtcars2.head()</code></pre>
+</div>
+<div id="wide-to-long-gather" class="section level4">
+<h4>3.2 wide to long (gather)</h4>
+<p><strong>R version:</strong></p>
+<pre class="r"><code>untidy_mtcars1 %&gt;% 
+  gather(key=&quot;transmission&quot;, value=&quot;value&quot;, automatic, manual) %&gt;% 
+  filter(value==1) %&gt;% 
+  select(-value)</code></pre>
+<pre><code>## # A tibble: 32 x 12
+##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs  gear  carb
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     3     1
+##  2 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     3     2
+##  3 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     3     1
+##  4 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     3     4
+##  5 Merc…  24.4     4  147.    62  3.69  3.19  20       1     4     2
+##  6 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     4     2
+##  7 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     4     4
+##  8 Merc…  17.8     6  168.   123  3.92  3.44  18.9     1     4     4
+##  9 Merc…  16.4     8  276.   180  3.07  4.07  17.4     0     3     3
+## 10 Merc…  17.3     8  276.   180  3.07  3.73  17.6     0     3     3
+## # … with 22 more rows, and 1 more variable: transmission &lt;chr&gt;</code></pre>
+<p><strong>Python version:</strong></p>
+<pre class="python"><code>untidy_mtcars1 = pd.read_csv(&quot;untidy_mtcars1.tsv&quot;,sep=&quot;\t&quot;)
+
+### select columns need to melt as &quot;value_vars&quot;
+value_vars = [&quot;automatic&quot;,&quot;manual&quot;]
+### make columns that dont need to be changed as &quot;id_vars&quot; 
+id_vars = list(untidy_mtcars1.drop(columns=value_vars).columns)
+### melt -- var_name as where &quot;value_vars&quot; column name will go
+tidy_mtcars1 = pd.melt(
+    untidy_mtcars1, 
+    id_vars=id_vars,
+    value_vars=value_vars,
+    var_name=&quot;am&quot;,
+    value_name=&quot;value&quot;
+)
+### remove not specified the value
+tidy_mtcars1 = tidy_mtcars1[tidy_mtcars1[&quot;value&quot;]==1].drop(columns=[&quot;value&quot;])
+tidy_mtcars1 = tidy_mtcars1.reset_index(drop=True)
+### convert am value to it used to 
+def change_am(df):
+    if(df[&quot;am&quot;]==&quot;automatic&quot;):
+        return 1
+    if(df[&quot;am&quot;]==&quot;manual&quot;):
+        return 0
+tidy_mtcars1[&quot;am&quot;]=tidy_mtcars1.apply(change_am, axis=1)
+
+tidy_mtcars1.head()</code></pre>
+<p>Let’s call it a day at this long blog. The part2 will cover the following three parts – group, table join and accessory functions for data wrangling.</p>
+</div>
+</div>
+
+  </div>
+  <footer>
+    <ul class="stats">
+  
+    
+    
+      <li class="categories">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/categories/r">r</a></li>
+          
+            
+            <li><a class="article-category-link" href="/categories/python">python</a></li>
+          
+        </ul>
+      </li>
+    
+  
+  
+    
+    
+      <li class="tags">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/tags/datawrangle">dataWrangle</a></li>
+          
+            
+            <li><a class="article-category-link" href="/tags/r2py">R2Py</a></li>
+          
+        </ul>
+      </li>
+    
+  
+</ul>
+
+  </footer>
+</article>
+<article class="post">
+  
+
+</article>
+<div class="pagination">
+  
+    <a href="/post/network_analysis_part3/" class="button big previous"><i class="fas fa-angle-left"></i> Network visualization (part3)</a>
+  
+  
+</div>
+
+
+      </main>
+      <section id="site-sidebar">
+  
+    <section id="recent-posts">
+      <header>
+        <h1>Recent posts</h1>
+      </header>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2019-10-22_data_wrangling/">From R to Python: Data Wrangling (part1)</a></h1>
+          <time class="published" datetime="">October 22, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/">Post</a></h1>
+          <time class="published" datetime="">October 22, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis_part3/">Network visualization (part3)</a></h1>
+          <time class="published" datetime="">September 4, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis_part2-2/">Network analysis part2</a></h1>
+          <time class="published" datetime="">August 24, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis/">Network Analysis in R (part1)</a></h1>
+          <time class="published" datetime="">July 11, 2019</time>
+        </header>
+      </article>
+      
+      
+        <a href="/post/" class="button">See more</a>
+      
+    </section>
+  
+
+  
+    
+      <section id="categories">
+        <header>
+          <h1><a href="/categories">Categories</a></h1>
+        </header>
+        <ul>
+          
+            
+          
+          
+          <li>
+            
+              <a href="/categories/r/">r<span class="count">4</span></a>
+            
+          
+          <li>
+            
+              <a href="/categories/python/">python<span class="count">1</span></a>
+            
+          
+          </li>
+        </ul>
+      </section>
+    
+  
+
+  <section id="mini-bio">
+    <header>
+      <h1>About</h1>
+    </header>
+    <p></p>
+    <footer>
+      <a href="/about" class="button">Learn More</a>
+    </footer>
+  </section>
+</section>
+
+
+
+
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+    
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            processEscapes: true,
+            processEnvironments: true
+        },
+        // Center justify equations in code and markdown cells. Elsewhere
+        // we use CSS to left justify single line equations in code cells.
+        displayAlign: 'center',
+        "HTML-CSS": {
+            styles: {'.MathJax_Display': {"margin": 0}},
+            linebreaks: { automatic: true }
+        }
+    });
+    </script>
+    
+      <footer id="site-footer">
+  
+      <ul class="socnet-icons">
+        
+        <li><a href="//github.com/sckinta" target="_blank" rel="noopener" title="GitHub" class="fab fa-github"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//linkedin.com/in/chun-su-a031087b" target="_blank" rel="noopener" title="LinkedIn" class="fab fa-linkedin"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//twitter.com/SophiaSu0205" target="_blank" rel="noopener" title="Twitter" class="fab fa-twitter"></a></li>
+
+
+
+
+
+
+
+<li><a href="//researchgate.net/profile/Chun_Su" target="_blank" rel="noopener" title="Research Gate"><i class="ai ai-researchgate"></i></a></li>
+
+
+<li><a href="mailto:sckinta@gmail.com" target="_blank" title="Email" class="far fa-envelope"></a></li>
+
+      </ul>
+  
+  <p class="copyright">
+    
+      &copy; 2019
+      
+        LEARNING WITH SCKINTA
+      
+    .
+    Powered by <a href="//gohugo.io" target="_blank" rel="noopener">Hugo</a>
+  </p>
+</footer>
+<a id="back-to-top" href="#" class="fas fa-arrow-up fa-2x"></a>
+
+      
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/html.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/css.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/js.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/toml.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.js"></script>
+  <script src=/js/util.js></script>
+  <script src=/js/main.js></script>
+  <script src=/js/add-on.js></script>
+  
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'learning with sckinta', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+    </div>
+  </body>
+</html>

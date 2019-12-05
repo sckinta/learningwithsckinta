@@ -6,10 +6,19 @@
     <description>Recent content on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 04 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 22 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>From R to Python: Data Wrangling (part1)</title>
+      <link>/post/2019-10-22_data_wrangling/</link>
+      <pubDate>Tue, 22 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019-10-22_data_wrangling/</guid>
+      <description>Data wrangling usually stands as the first step for any data scientist. I started to learn data science by reading the book “R for Data Science”. The book is mainly an intro to the tidyverse, which is a collection of R packages designed for data science. It has its own grammar/syntax that can help users efficiently deal with data wrangling, visualization, string/date management, etc. As a regular tidyverse user now, I benefit a lot from the transition from base R to higher level R language in sophisticated packages.</description>
+    </item>
     
     <item>
       <title>Network visualization (part3)</title>
