@@ -36,7 +36,7 @@ How to generate object from scratch? (tibble) How to convert base R/python objec
 library(tidyverse)
 
 # read from file to tibble
-mtcars = read_delim("mtcars.tsv", delim = "\t")
+mtcars = read_delim("https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/mtcars.tsv", delim = "\t")
 class(mtcars)
 
 # create tibble from scratch
@@ -78,7 +78,7 @@ import pandas as pd
 import numpy as np
 
 # read from file to DataFrame
-mtcars = pd.read_csv('mtcars.tsv', sep="\t")
+mtcars = pd.read_csv('https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/mtcars.tsv', sep="\t")
 
 # create DataFrame from scratch (dictionary)
 np.random.seed(123)
@@ -263,7 +263,7 @@ To tidy the untidy_mtcars1 we `gather` two variables (manual and automatic) to o
 
 **R version:**
 ```{r load_data0, echo=F, warning=F, message=F}
-untidy_mtcars2 = read_delim("untidy_mtcars2.tsv", delim="\t")
+untidy_mtcars2 = read_delim("https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/untidy_mtcars2.tsv", delim="\t")
 ```
 ```{r spread, warning=F, message=F}
 untidy_mtcars2 %>% spread(key=gearCarb, value=number)
@@ -273,7 +273,7 @@ untidy_mtcars2 %>% spread(key=gearCarb, value=number)
 **Python version:**
 ```{python, eval=F}
 # read untidy_mtcars2
-untidy_mtcars2 = pd.read_csv("untidy_mtcars2.tsv",sep="\t")
+untidy_mtcars2 = pd.read_csv("https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/untidy_mtcars2.tsv",sep="\t")
 
 # set unique column as index
 tmp_untidy_mtcars2 = untidy_mtcars2.set_index("model")
@@ -295,7 +295,7 @@ tidy_mtcars2.head()
 
 **R version:**
 ```{r load_data, echo=F, warning=F, message=F}
-untidy_mtcars1 = read_delim("untidy_mtcars1.tsv", delim="\t")
+untidy_mtcars1 = read_delim("https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/untidy_mtcars1.tsv", delim="\t")
 ```
 ```{r gather, warning=F, message=F}
 untidy_mtcars1 %>% 
@@ -307,7 +307,7 @@ untidy_mtcars1 %>%
 
 **Python version:**
 ```{python, eval=F}
-untidy_mtcars1 = pd.read_csv("untidy_mtcars1.tsv",sep="\t")
+untidy_mtcars1 = pd.read_csv("https://raw.githubusercontent.com/sckinta/learningwithsckinta/master/content/post/untidy_mtcars1.tsv",sep="\t")
 
 ### select columns need to melt as "value_vars"
 value_vars = ["automatic","manual"]
