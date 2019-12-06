@@ -15,7 +15,7 @@
 
 <meta itemprop="datePublished" content="2019-10-22T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-10-22T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="4002">
+<meta itemprop="wordCount" content="3998">
 
 
 
@@ -284,7 +284,7 @@ use_condaenv(&quot;py36&quot;)</code></pre>
 <pre class="r"><code>library(tidyverse)
 
 # read from file to tibble
-mtcars = read_delim(&quot;mtcars.tsv&quot;, delim = &quot;\t&quot;)
+mtcars = read_delim(&quot;mtcars.csv&quot;, delim = &quot;,&quot;)
 class(mtcars)</code></pre>
 <pre><code>## [1] &quot;spec_tbl_df&quot; &quot;tbl_df&quot;      &quot;tbl&quot;         &quot;data.frame&quot;</code></pre>
 <pre class="r"><code># create tibble from scratch
@@ -374,7 +374,7 @@ mtcars %&gt;% column_to_rownames(&quot;model&quot;)</code></pre>
 import numpy as np
 
 # read from file to DataFrame
-mtcars = pd.read_csv(&#39;mtcars.tsv&#39;, sep=&quot;\t&quot;)
+mtcars = pd.read_csv(&#39;mtcars.csv&#39;, sep=&quot;,&quot;)
 
 # create DataFrame from scratch (dictionary)
 np.random.seed(123)
@@ -637,20 +637,20 @@ tmp_mtcars.head()</code></pre>
 ## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     4     4         1
 ## # … with 22 more rows, and 1 more variable: manual &lt;dbl&gt;</code></pre>
 <p>Here is another example of untidy data (<code>untidy_mtcars2</code>) in which two variables (gear, carb) are put together as one variable (number) while using “gearCarb” to indicate which it refers to</p>
-<pre><code>## # A tibble: 32 x 13
-##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs  gear  carb automatic
-##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
-##  1 Mazd…  21       6  160    110  3.9   2.62  16.5     0     4     4         0
-##  2 Mazd…  21       6  160    110  3.9   2.88  17.0     0     4     4         0
-##  3 Dats…  22.8     4  108     93  3.85  2.32  18.6     1     4     1         0
-##  4 Horn…  21.4     6  258    110  3.08  3.22  19.4     1     3     1         1
-##  5 Horn…  18.7     8  360    175  3.15  3.44  17.0     0     3     2         1
-##  6 Vali…  18.1     6  225    105  2.76  3.46  20.2     1     3     1         1
-##  7 Dust…  14.3     8  360    245  3.21  3.57  15.8     0     3     4         1
-##  8 Merc…  24.4     4  147.    62  3.69  3.19  20       1     4     2         1
-##  9 Merc…  22.8     4  141.    95  3.92  3.15  22.9     1     4     2         1
-## 10 Merc…  19.2     6  168.   123  3.92  3.44  18.3     1     4     4         1
-## # … with 22 more rows, and 1 more variable: manual &lt;dbl&gt;</code></pre>
+<pre><code>## # A tibble: 64 x 12
+##    model     mpg   cyl  disp    hp  drat    wt  qsec    vs    am gearCarb number
+##    &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+##  1 AMC Ja…  15.2     8   304   150  3.15  3.44  17.3     0     0 gear          3
+##  2 AMC Ja…  15.2     8   304   150  3.15  3.44  17.3     0     0 carb          2
+##  3 Cadill…  10.4     8   472   205  2.93  5.25  18.0     0     0 gear          3
+##  4 Cadill…  10.4     8   472   205  2.93  5.25  18.0     0     0 carb          4
+##  5 Camaro…  13.3     8   350   245  3.73  3.84  15.4     0     0 gear          3
+##  6 Camaro…  13.3     8   350   245  3.73  3.84  15.4     0     0 carb          4
+##  7 Chrysl…  14.7     8   440   230  3.23  5.34  17.4     0     0 gear          3
+##  8 Chrysl…  14.7     8   440   230  3.23  5.34  17.4     0     0 carb          4
+##  9 Datsun…  22.8     4   108    93  3.85  2.32  18.6     1     1 gear          4
+## 10 Datsun…  22.8     4   108    93  3.85  2.32  18.6     1     1 carb          1
+## # … with 54 more rows</code></pre>
 <p>To tidy the untidy_mtcars1 we <code>gather</code> two variables (manual and automatic) to one variable (transmission). In table shape, it is “wide to long” pivotting. To tidy the untidy_mtcars2, we <code>spread</code> “number” column to “gear” and “carb”. This is “long to wide” pivotting</p>
 <div id="long-to-wide-spread" class="section level4">
 <h4>3.1 long to wide (spread)</h4>
@@ -672,7 +672,7 @@ tmp_mtcars.head()</code></pre>
 ## # … with 22 more rows</code></pre>
 <p><strong>Python version:</strong></p>
 <pre class="python"><code># read untidy_mtcars2
-untidy_mtcars2 = pd.read_csv(&quot;untidy_mtcars2.tsv&quot;,sep=&quot;\t&quot;)
+untidy_mtcars2 = pd.read_csv(&quot;untidy_mtcars2.tsv&quot;,sep=&quot;,&quot;)
 
 # set unique column as index
 tmp_untidy_mtcars2 = untidy_mtcars2.set_index(&quot;model&quot;)
@@ -711,7 +711,7 @@ tidy_mtcars2.head()</code></pre>
 ## 10 Merc…  17.3     8  276.   180  3.07  3.73  17.6     0     3     3
 ## # … with 22 more rows, and 1 more variable: transmission &lt;chr&gt;</code></pre>
 <p><strong>Python version:</strong></p>
-<pre class="python"><code>untidy_mtcars1 = pd.read_csv(&quot;untidy_mtcars1.tsv&quot;,sep=&quot;\t&quot;)
+<pre class="python"><code>untidy_mtcars1 = pd.read_csv(&quot;untidy_mtcars1.csv&quot;,sep=&quot;,&quot;)
 
 ### select columns need to melt as &quot;value_vars&quot;
 value_vars = [&quot;automatic&quot;,&quot;manual&quot;]
