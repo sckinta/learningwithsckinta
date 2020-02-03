@@ -226,7 +226,7 @@ tmp_mtcars.head()
 
 ## 3. Pivot data.frame
 
-Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. There is rumor saying that Tidyverse gonna change `spread` and `gather` to `pivot` which is the Python function for pivoting data.frame. 
+Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. Current tidyverse has changed `spread` and `gather` to `pivot_long` and `pivot_wide`, but still keep the old functions. Those two functions correspond to the method `pivot` and function `pd.melt` in python
 
 Here is an example of untidy data (`untidy_mtcars1`) in which one variable (tranmission) is split to two columns (manual, automatic).
 

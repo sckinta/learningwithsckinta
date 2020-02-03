@@ -15,7 +15,7 @@
 
 <meta itemprop="datePublished" content="2019-10-22T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-10-22T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3998">
+<meta itemprop="wordCount" content="4007">
 
 
 
@@ -620,7 +620,7 @@ tmp_mtcars.head()</code></pre>
 </div>
 <div id="pivot-data.frame" class="section level2">
 <h2>3. Pivot data.frame</h2>
-<p>Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. There is rumor saying that Tidyverse gonna change <code>spread</code> and <code>gather</code> to <code>pivot</code> which is the Python function for pivoting data.frame.</p>
+<p>Tidyverse/tidyr makes pivoting data.frame hundred times more convenient than base R. It is frequently used for tiding the data. Current tidyverse has changed <code>spread</code> and <code>gather</code> to <code>pivot_long</code> and <code>pivot_wide</code>, but still keep the old functions. Those two functions correspond to the method <code>pivot</code> and function <code>pd.melt</code> in python</p>
 <p>Here is an example of untidy data (<code>untidy_mtcars1</code>) in which one variable (tranmission) is split to two columns (manual, automatic).</p>
 <pre><code>## # A tibble: 32 x 13
 ##    model   mpg   cyl  disp    hp  drat    wt  qsec    vs  gear  carb automatic
@@ -789,6 +789,8 @@ tidy_mtcars1.head()</code></pre>
     <a href="/post/network_analysis_part3/" class="button big previous"><i class="fas fa-angle-left"></i> Network visualization (part3)</a>
   
   
+    <a href="/post/2020-1-29-paws-return-eda/" class="button big next">PAWS return project EDA <i class="fas fa-angle-right"></i></a>
+  
 </div>
 
 
@@ -806,8 +808,8 @@ tidy_mtcars1.head()</code></pre>
 
         </section>
         <header>
-          <h1><a href="/post/2019-10-22_data_wrangling/">From R to Python: Data Wrangling (part1)</a></h1>
-          <time class="published" datetime="">October 22, 2019</time>
+          <h1><a href="/post/2020-1-29-paws-return-eda/">PAWS return project EDA</a></h1>
+          <time class="published" datetime="">October 22, 2020</time>
         </header>
       </article>
       
@@ -818,6 +820,17 @@ tidy_mtcars1.head()</code></pre>
         </section>
         <header>
           <h1><a href="/post/">Post</a></h1>
+          <time class="published" datetime="">October 22, 2020</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2019-10-22_data_wrangling/">From R to Python: Data Wrangling (part1)</a></h1>
           <time class="published" datetime="">October 22, 2019</time>
         </header>
       </article>
@@ -844,17 +857,6 @@ tidy_mtcars1.head()</code></pre>
         </header>
       </article>
       
-      <article class="mini-post">
-        <section>
-          
-
-        </section>
-        <header>
-          <h1><a href="/post/network_analysis/">Network Analysis in R (part1)</a></h1>
-          <time class="published" datetime="">July 11, 2019</time>
-        </header>
-      </article>
-      
       
         <a href="/post/" class="button">See more</a>
       
@@ -874,7 +876,7 @@ tidy_mtcars1.head()</code></pre>
           
           <li>
             
-              <a href="/categories/r/">r<span class="count">4</span></a>
+              <a href="/categories/r/">r<span class="count">5</span></a>
             
           
           <li>
@@ -971,7 +973,7 @@ tidy_mtcars1.head()</code></pre>
   
   <p class="copyright">
     
-      &copy; 2019
+      &copy; 2020
       
         LEARNING WITH SCKINTA
       
