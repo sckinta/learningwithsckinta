@@ -6,7 +6,7 @@
     <description>Recent content on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 22 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 29 Jan 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>PAWS return project EDA</title>
       <link>/post/2020-1-29-paws-return-eda/</link>
-      <pubDate>Thu, 22 Oct 2020 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 29 Jan 2020 00:00:00 +0000</pubDate>
       
       <guid>/post/2020-1-29-paws-return-eda/</guid>
       <description>As my new year resolution, I decide to participate in more projects and horn programming skills by doing the work. One opportunity poped up at beginning this year. I am thrilled to participate and lead Rladies Philly’s new collaboration with Philadelphia Animal Welfare Society (PAWS) to analyze their animal data, aiming to help PAWS improving adoption process and clinic efficiency. This blog is part of explortory data analysis (EDA) I have done so far.</description>
