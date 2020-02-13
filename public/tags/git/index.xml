@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>git on LEARNING WITH SCKINTA</title>
+    <link>/tags/git/</link>
+    <description>Recent content in git on LEARNING WITH SCKINTA</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 11 Feb 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/git/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>All about git</title>
+      <link>/post/2020-02-11_all_about_git/</link>
+      <pubDate>Tue, 11 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-02-11_all_about_git/</guid>
+      <description>Recently I have actively participated two team projects (PAWS and 2020datahack) which involves multiple team members and a lot of group decisions. For the first time, I realized how important to use github as the platform for code sharing and communication. Here I am going to share several commands that I frequently used at this process and hope it will help people quickly pick up this useful collaboration tool.</description>
+    </item>
+    
+  </channel>
+</rss>

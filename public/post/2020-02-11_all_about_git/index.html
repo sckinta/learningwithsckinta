@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8">
+<title>All about git - LEARNING WITH SCKINTA</title>
+<meta name="description" content="A learning notebook of programming and data science">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+  <meta name="generator" content="Hugo 0.56.3" />
+  <meta itemprop="name" content="All about git">
+<meta itemprop="description" content="Recently I have actively participated two team projects (PAWS and 2020datahack) which involves multiple team members and a lot of group decisions. For the first time, I realized how important to use github as the platform for code sharing and communication. Here I am going to share several commands that I frequently used at this process and hope it will help people quickly pick up this useful collaboration tool.">
+
+
+<meta itemprop="datePublished" content="2020-02-11T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2020-02-11T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="1829">
+
+
+
+<meta itemprop="keywords" content="git," />
+
+  <meta property="og:title" content="All about git" />
+<meta property="og:description" content="Recently I have actively participated two team projects (PAWS and 2020datahack) which involves multiple team members and a lot of group decisions. For the first time, I realized how important to use github as the platform for code sharing and communication. Here I am going to share several commands that I frequently used at this process and hope it will help people quickly pick up this useful collaboration tool." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/post/2020-02-11_all_about_git/" />
+<meta property="article:published_time" content="2020-02-11T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-02-11T00:00:00+00:00" />
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="All about git"/>
+<meta name="twitter:description" content="Recently I have actively participated two team projects (PAWS and 2020datahack) which involves multiple team members and a lot of group decisions. For the first time, I realized how important to use github as the platform for code sharing and communication. Here I am going to share several commands that I frequently used at this process and hope it will help people quickly pick up this useful collaboration tool."/>
+<meta name="twitter:site" content="@SophiaSu0205"/>
+
+  
+
+  <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
+  
+    
+      <link rel="stylesheet" href="/css/normalize.css">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.1.0/css/flag-icon.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css" integrity="sha384-i1LQnF23gykqWXg6jxC2ZbCbUMxyw5gLZY6UiUS98LYV5unm8GWmfkIS6jqJfb4E" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.css" />
+      <link rel="stylesheet" href="/css/main.min.css">
+      <link rel="stylesheet" href="/css/add-on.css">
+    
+  
+  
+  
+  
+  
+</head>
+
+  <body>
+    
+<header id="site-header">
+  <nav id="site-nav">
+    <h1 class="nav-title">
+      <a href="/">
+        
+          
+            post
+          
+        
+      </a>
+    </h1>
+    <menu id="site-nav-menu" class="flyout-menu">
+      
+        <a href="/" class="link"><i class="fas fa-home">&nbsp;</i>Home</a>
+      
+        <a href="/about/" class="link"><i class="far fa-id-card">&nbsp;</i>About</a>
+      
+        <a href="/post/" class="link"><i class="far fa-newspaper">&nbsp;</i>Notebook</a>
+      
+        <a href="/categories/" class="link"><i class="fas fa-sitemap">&nbsp;</i>Categories</a>
+      
+        <a href="/contact/" class="link"><i class="far fa-envelope">&nbsp;</i>Contact</a>
+      
+      <a href="#share-menu" class="share-toggle"><i class="fas fa-share-alt">&nbsp;</i>Share</a>
+      
+
+    </menu>
+    
+
+    <a href="#share-menu" class="share-toggle"><i class="fas fa-share-alt fa-2x">&nbsp;</i></a>
+    
+    <a href="#site-nav" class="nav-toggle"><i class="fas fa-bars fa-2x"></i></a>
+  </nav>
+  
+  
+    <menu id="share-menu" class="flyout-menu">
+      <h1>Share Post</h1>
+      
+
+
+
+
+  
+    
+    <a href="//twitter.com/share?text=All%20about%20git&amp;url=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" rel="noopener" class="share-btn twitter">
+        <i class="fab fa-twitter"></i><p>&nbsp;Twitter</p>
+      </a>
+  
+
+  
+      <a href="//www.facebook.com/sharer/sharer.php?u=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" rel="noopener" class="share-btn facebook">
+        <i class="fab fa-facebook"></i><p>&nbsp;Facebook</p>
+        </a>
+  
+
+  
+    <a href="//www.reddit.com/submit?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;title=All%20about%20git" target="_blank" rel="noopener" class="share-btn reddit">
+          <i class="fab fa-reddit-alien"></i><p>&nbsp;Reddit</p>
+        </a>
+  
+
+  
+        <a href="//www.linkedin.com/shareArticle?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;title=All%20about%20git" target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i><p>&nbsp;LinkedIn</p>
+          </a>
+  
+
+  
+        <a href="//www.pinterest.com/pin/create/button/?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;description=All%20about%20git" target="_blank" rel="noopener" class="share-btn pinterest">
+          <i class="fab fa-pinterest-p"></i><p>&nbsp;Pinterest</p>
+        </a>
+  
+
+  
+        <a href="mailto:?subject=Check out this post by %7b%20%20%20%20%20%20%20%20map%5b%5d%7d&amp;body=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" class="share-btn email" data-proofer-ignore>
+          <i class="fas fa-envelope"></i><p>&nbsp;Email</p>
+        </a>
+  
+
+
+    </menu>
+  
+</header>
+
+    <div id="wrapper">
+      <section id="site-intro">
+  <a href="/"><img src="/img/main/lele.jpg" class="circle" width="" alt="Hugo Future Imperfect Slim" /></a>
+  <header>
+    <h1>LEARNING WITH SCKINTA</h1>
+  </header>
+  <main>
+    <p>A LEARNING NOTEBOOK OF PROGRAMMING AND DATA SCIENCE.</p>
+  </main>
+  
+    <footer>
+      <ul class="socnet-icons">
+        
+        <li><a href="//github.com/sckinta" target="_blank" rel="noopener" title="GitHub" class="fab fa-github"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//linkedin.com/in/chun-su-a031087b" target="_blank" rel="noopener" title="LinkedIn" class="fab fa-linkedin"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//twitter.com/SophiaSu0205" target="_blank" rel="noopener" title="Twitter" class="fab fa-twitter"></a></li>
+
+
+
+
+
+
+
+<li><a href="//researchgate.net/profile/Chun_Su" target="_blank" rel="noopener" title="Research Gate"><i class="ai ai-researchgate"></i></a></li>
+
+
+<li><a href="mailto:sckinta@gmail.com" target="_blank" title="Email" class="far fa-envelope"></a></li>
+
+      </ul>
+    </footer>
+  
+</section>
+
+      <main id="site-main">
+        <article class="post">
+  <header>
+  <div class="title">
+    
+        <h2><a href="/post/2020-02-11_all_about_git/">All about git</a></h2>
+    
+    
+</div>
+  <div class="meta">
+    <time class="published" datetime="2020-02-11 00:00:00 &#43;0000 UTC">
+      February 11, 2020
+    </time>
+    <span class="author">Sckinta</span>
+    
+        <p>9 minute read</p>
+    
+  </div>
+</header>
+
+  <section id="socnet-share">
+    
+
+
+
+
+  
+    
+    <a href="//twitter.com/share?text=All%20about%20git&amp;url=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" rel="noopener" class="share-btn twitter">
+        <i class="fab fa-twitter"></i><p>&nbsp;Twitter</p>
+      </a>
+  
+
+  
+      <a href="//www.facebook.com/sharer/sharer.php?u=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" rel="noopener" class="share-btn facebook">
+        <i class="fab fa-facebook"></i><p>&nbsp;Facebook</p>
+        </a>
+  
+
+  
+    <a href="//www.reddit.com/submit?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;title=All%20about%20git" target="_blank" rel="noopener" class="share-btn reddit">
+          <i class="fab fa-reddit-alien"></i><p>&nbsp;Reddit</p>
+        </a>
+  
+
+  
+        <a href="//www.linkedin.com/shareArticle?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;title=All%20about%20git" target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i><p>&nbsp;LinkedIn</p>
+          </a>
+  
+
+  
+        <a href="//www.pinterest.com/pin/create/button/?url=%2fpost%2f2020-02-11_all_about_git%2f&amp;description=All%20about%20git" target="_blank" rel="noopener" class="share-btn pinterest">
+          <i class="fab fa-pinterest-p"></i><p>&nbsp;Pinterest</p>
+        </a>
+  
+
+  
+        <a href="mailto:?subject=Check out this post by %7b%20%20%20%20%20%20%20%20map%5b%5d%7d&amp;body=%2fpost%2f2020-02-11_all_about_git%2f" target="_blank" class="share-btn email" data-proofer-ignore>
+          <i class="fas fa-envelope"></i><p>&nbsp;Email</p>
+        </a>
+  
+
+
+  </section>
+  
+
+  <div class="content">
+    
+
+
+<p>Recently I have actively participated two team projects (PAWS and 2020datahack) which involves multiple team members and a lot of group decisions. For the first time, I realized how important to use github as the platform for code sharing and communication. Here I am going to share several commands that I frequently used at this process and hope it will help people quickly pick up this useful collaboration tool.</p>
+<div id="initiate-a-new-repo-at-github" class="section level3">
+<h3>1. initiate a new repo at github</h3>
+<p>Repository, aka repo, is a collection of codes, data and documentation designated for project(s). As far as you have github account, you can create public repo(s) through github webpage easily. Follow the step 1-5 on <a href="https://help.github.com/en/github/getting-started-with-github/create-a-repo">this website</a>, then you will create a repo with a few clicks. New repo usually comes with a README.md file. Using markdown format, you can describe the project in this README.md file which will be loaded to your repo main page when you open it. Here is the <a href="https://github.com/rladiesPHL/PAWS_return_noshow">repo</a> I created for Rladies-Philly PAWS projects.</p>
+</div>
+<div id="local-vs.remote" class="section level3">
+<h3>2. Local vs. remote</h3>
+<p>One concept need to be clarified here is local vs. remote. <em>Github</em> is the most popular cloud-based service hosting repos. Those repo is managed by git installed at remote (aka, github here). So what is <em>git</em>? Git is a version control system that lets you manage and keep track of your source code history. It can also be <a href="https://git-scm.com/downloads">installed</a> at local and work as local version control system. In that case, your snapshot of each version will be saved at local instead of cloud.</p>
+<pre class="r"><code># to initiate repo at local
+# suppose you have a project working now called repoX
+# all scripts/data/documentation are saved in a folder in your computer called repoX. 
+# Now you want to start git version control for this project
+cd repoX/
+git init
+git add -A
+git commit -m &quot;initiate version control&quot;</code></pre>
+<p>The above code can be run on any shell-like terminal. And congrats, you have sucessefully create version control at local folder repoX/. <code>git commit</code> basically create a snapshot of this folder. If you want to change it back to this moment in the future, you can do it with commit number (it is hash code). It is important to write a meaningful message (like here “initiate version control”) to remind yourself what the snapshot is like. We will discuss how to recover using commit number in a little bit.</p>
+</div>
+<div id="clone-pull-and-push" class="section level3">
+<h3>3. clone, pull and push</h3>
+<p>To communicate between your local and remote github, you can access through git by downloading (<code>pull</code>) remote to local and uploading (<code>push</code>) local repo to the cloud (github).</p>
+<p>If you initiate repo from github first (step 1 above), you can first clone that repo to local. This repo will remember the remote address and allow you later pull from and push to the remote</p>
+<pre class="r"><code># here I use rladiesPHL/PAWS_return_noshow.git as my example
+
+# clone the repo to local
+git clone https://github.com/rladiesPHL/PAWS_return_noshow.git</code></pre>
+<p>Anyone can clone a public repo to their local computer. However, to be able to <code>pull</code> and <code>push</code>, you need to be included as collaborators for that repo specially, or you are the repo owner yourself. To add someone as collaborator, follow the <a href="https://help.github.com/en/github/setting-up-and-managing-your-github-user-account/inviting-collaborators-to-a-personal-repository">steps</a> by clicking on the webpage. Once you are the owner/collaborator, you can do following command to download and upload.</p>
+<pre class="r"><code># initiate clone will create a folder at local called &quot;PAWS_return_noshow&quot;, go to that folder
+cd PAWS_return_noshow/
+# pull (the update) from PAWS_return_noshow (since the clone remember the remote address)
+git pull
+
+# you can do your analysis, do your update at local now
+
+# when it is time to upload your analysis to cloud, you first want to take a snapshot of what you have done so far
+git add -A
+git commit -m &quot;my update&quot;
+
+# now you can push your analysis to the github
+git push origin master</code></pre>
+</div>
+<div id="fork" class="section level3">
+<h3>4. fork</h3>
+<p>Above example is to push your analysis directly to the origin’s master branch. So what is <code>origin</code>? (what is the master branch will be explained in the next). Put it simple, you can consider origin as the place where is first downloaded. For example, I download PAWS_return_noshow repo from rladiesPHL account and the origin here will be rladiesPHL repo address (<a href="https://github.com/rladiesPHL/PAWS_return_noshow.git" class="uri">https://github.com/rladiesPHL/PAWS_return_noshow.git</a>).</p>
+<pre class="r"><code># to quick check your repo remote origin
+git remote -v</code></pre>
+<pre class="r"><code># origin    https://github.com/rladiesPHL/PAWS_return_noshow.git (fetch)
+# origin    https://github.com/rladiesPHL/PAWS_return_noshow.git (push)</code></pre>
+<p>Why is <code>origin</code> important? The origin determines which repo push and pull will go to/from. Some repo won’t allow you to push and pull because you are not the owner or collaborator. If you do not want request pull and push permission from the owner, you can <code>fork</code> the repo to your own github account. Here <code>fork</code> is like to clone a remote repo belonging to other poeple’s account at that snapshot to your own account. You can develope/make commits on repo without any push/pull permission obstables.</p>
+<p>The easiest way to fork a repo is from webpage. You can follow the instruction on this <a href="https://help.github.com/en/enterprise/2.13/user/articles/fork-a-repo">help page</a>.</p>
+<p>Be aware, if you <code>git clone</code> the forked repo from your github account, the “origin” is your own account repo. This repo is functionally independent from the upstream repo, although at top of your own repo page it will show “This branch is X commits ahead of/behind XXX:master.” when the upstream repo makes commits after forking. What if you want your own “forked” repo remember where it comes so that you can merge the future changes from the upstream repo to your “forked” repo?</p>
+<pre class="r"><code># here I show an example of a forked repo at my own account (sckinta/datahack2020) linking back to the upstream account (CodeForPhilly/datahack2020)
+
+# add a repo description called &quot;upstream&quot; and associated this name with upstream repo. Here &quot;upstream&quot; can be any name (eg. up, ori, ...)
+git remote add upstream https://github.com/CodeForPhilly/datahack2020.git
+
+# check remote info again you will find now repo have two remote associated with it. one is called &quot;origin&quot; and another is called &quot;upstream&quot;
+git remote -v</code></pre>
+<pre class="r"><code># origin    https://github.com/sckinta/datahack2020.git (fetch)
+# origin    https://github.com/sckinta/datahack2020.git (push)
+# upstream  https://github.com/CodeForPhilly/datahack2020.git (fetch)
+# upstream  https://github.com/CodeForPhilly/datahack2020.git (push)</code></pre>
+<p>To update your forked repo at github, you need three steps: 1) <code>fetch</code> the upstream repo to your local repo; 2) <code>merge</code> updated fetch content into the main branch at local; 3) <code>push</code> updated local to remote forked repo</p>
+<pre class="r"><code># fecth upstream to local
+git fetch upstream
+
+# Merge the updated fetch content into the main branch at local
+git merge upstream/master
+
+# Update, push to remote(fork) master branch
+git push origin master</code></pre>
+<p>I highly suggest <code>pull</code> your forked repo to local first before <code>fetch</code> upstream. It will guarantee when you merge the upstream it will not cause the conflicts.</p>
+</div>
+<div id="branch" class="section level3">
+<h3>5. branch</h3>
+<p>After fork origin, another useful tool for collobarative project is using branch. “Branch”, as it is named, means a branch of analysis derived from the mainstream (which is by default named “master”). You can create branches on your own repo or the repo you have been invited as collaborator. This is the biggest difference between branch and a repo fork. To add a branch at local, using code <code>git checkout</code>.</p>
+<pre class="r"><code># Create and switch to a new branch (say, branch &quot;chun&quot;)
+git checkout -b chun
+
+# go back to the master
+git checkout master</code></pre>
+<p>Now you can do your analysis in the repo fold. When you are ready to commit your new analysis, how will your repo know this analysis added to branch “chun”? Simple, using <code>git checkout</code> switch to chun branch and commit there. You can also push your new branch to remote, where the branch will show up under the <github_name>/<repo_name>/tree</p>
+<pre class="r"><code># for example I push my new analysis to branch &quot;chun&quot; and finally push it to sckinta/datahack2020
+
+# switch to branch chun
+git checkout chun
+
+# make your new commit
+git add -A
+git commit -m &quot;new analysis&quot;
+
+# push it to github branch
+git push origin chun</code></pre>
+<p>If you want to continue on other collaborator’s branch (say “abc”), you can pull that branch to local.</p>
+<pre class="r"><code># download branch abc to your analysis
+git pull origin abc
+
+# check how many branches current local repo contains
+git branch</code></pre>
+<pre class="r"><code># *chun
+#   master
+#   abc</code></pre>
+<p>After everybody did their analysis on their own branch, your group finally determine we are going to merge branch “abc” to master and delete the branch “abc”.</p>
+<pre class="r"><code># go to the master first
+git checkout master
+
+# merge branch &quot;abc&quot; in
+git merge abc
+
+# delete old branch
+git checkout -d abc</code></pre>
+<p>Occasionally, this process doesn’t go smoothly. Conflicts may occur when you try to merge multiple branches in. Then you may need advance tools like <code>mergetool</code> and <code>opendiff</code>. Here I won’t explain them. Please refer to<a href="https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging#_advanced_merging">git tutorial page</a> for further reading. All the simple branch and merge has also been best explained on <a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging">git tutorial</a>.</p>
+</div>
+<div id="recover-a-certain-commit" class="section level3">
+<h3>6. Recover a certain commit</h3>
+<p>One major reason we want to use version control is that we can revert to a old snapshot/commit if we want. To check the commits done to the current repo, you can try <code>git log</code>. The log is reported in reverse chronical order.</p>
+<pre class="r"><code>git log --oneline</code></pre>
+<pre class="r"><code># ea03bb2 (HEAD -&gt; chun, origin/chun) clean and EDA on incident county
+# 3c659ec (upstream/master, origin/master, origin/HEAD, master) Merge pull request #7 from CodeForPhilly/branch_dubois
+# c76c701 (upstream/branch_dubois) updated outrigger &amp; added presentation
+# 29992c6 Merge pull request #6 from rjake/jake
+# 52c88ea Create psp_overdose_events.csv
+# 36495db Add codebook
+# 714f848 gitignore data files
+# 51e5974 added presentation slides</code></pre>
+<p>To revert to a commit</p>
+<pre class="r"><code># since we are currently at chun branch, we better go back to master where &quot;3c659ec&quot; is at
+git checkout master
+
+# revert to a commit
+git revert 3c659ec
+
+# the above command can also be
+git reset --hard 3c659ec</code></pre>
+<p>Remember all of above is only updated at local. If you want to make it show up at github, do a <code>add</code>, <code>commit</code> and <code>push</code> series.</p>
+</div>
+<div id="link-to-your-remote-account-at-local" class="section level3">
+<h3>7. link to your remote account at local</h3>
+<p>After introduce all above basic commands for git, the last thing I want to share is to set up the local git remote account. I probably shoud put it at #2.remote vs. local# part.</p>
+<p>To globally set github account at local can save your effort to put account name and password everytime you want to push/pull to your own account.</p>
+<pre class="r"><code># for example I set global account as rladiesPHL. This will save the global configuration to a ~/.gitconfig file. It will prompt password for you to input
+git config --global user.email &quot;philly@rladies.org&quot;
+git config --global user.name &quot;rladiesPHL&quot;</code></pre>
+<p>Howver, sometimes I want to switch back to my personal account temperally to do a quick push. I wish git will prompt account and password for me to input</p>
+<pre class="r"><code># reset global account a little bit
+git config --local credential.helper &quot;&quot;
+
+# when you push, it will prompt account and password for me to input
+git push origin master</code></pre>
+<p>All above are the frequently used git commands I used. Hope it will help anyone who is willing to use git version in their future project.</p>
+</div>
+
+  </div>
+  <footer>
+    <ul class="stats">
+  
+    
+    
+      <li class="categories">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/categories/bash">bash</a></li>
+          
+        </ul>
+      </li>
+    
+  
+  
+    
+    
+      <li class="tags">
+        <ul>
+          
+            
+            <li><a class="article-category-link" href="/tags/git">git</a></li>
+          
+        </ul>
+      </li>
+    
+  
+</ul>
+
+  </footer>
+</article>
+<article class="post">
+  
+
+</article>
+<div class="pagination">
+  
+    <a href="/post/2020-1-29-paws-return-eda/" class="button big previous"><i class="fas fa-angle-left"></i> PAWS return project EDA</a>
+  
+  
+</div>
+
+
+      </main>
+      <section id="site-sidebar">
+  
+    <section id="recent-posts">
+      <header>
+        <h1>Recent posts</h1>
+      </header>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2020-02-11_all_about_git/">All about git</a></h1>
+          <time class="published" datetime="">February 11, 2020</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/">Post</a></h1>
+          <time class="published" datetime="">February 11, 2020</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2020-1-29-paws-return-eda/">PAWS return project EDA</a></h1>
+          <time class="published" datetime="">January 29, 2020</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2019-10-22_data_wrangling/">From R to Python: Data Wrangling (part1)</a></h1>
+          <time class="published" datetime="">October 22, 2019</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/network_analysis_part3/">Network visualization (part3)</a></h1>
+          <time class="published" datetime="">September 4, 2019</time>
+        </header>
+      </article>
+      
+      
+        <a href="/post/" class="button">See more</a>
+      
+    </section>
+  
+
+  
+    
+      <section id="categories">
+        <header>
+          <h1><a href="/categories">Categories</a></h1>
+        </header>
+        <ul>
+          
+            
+          
+          
+          <li>
+            
+              <a href="/categories/r/">r<span class="count">5</span></a>
+            
+          
+          <li>
+            
+              <a href="/categories/bash/">bash<span class="count">1</span></a>
+            
+          
+          <li>
+            
+              <a href="/categories/python/">python<span class="count">1</span></a>
+            
+          
+          </li>
+        </ul>
+      </section>
+    
+  
+
+  <section id="mini-bio">
+    <header>
+      <h1>About</h1>
+    </header>
+    <p></p>
+    <footer>
+      <a href="/about" class="button">Learn More</a>
+    </footer>
+  </section>
+</section>
+
+
+
+
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+    
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            processEscapes: true,
+            processEnvironments: true
+        },
+        // Center justify equations in code and markdown cells. Elsewhere
+        // we use CSS to left justify single line equations in code cells.
+        displayAlign: 'center',
+        "HTML-CSS": {
+            styles: {'.MathJax_Display': {"margin": 0}},
+            linebreaks: { automatic: true }
+        }
+    });
+    </script>
+    
+      <footer id="site-footer">
+  
+      <ul class="socnet-icons">
+        
+        <li><a href="//github.com/sckinta" target="_blank" rel="noopener" title="GitHub" class="fab fa-github"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//linkedin.com/in/chun-su-a031087b" target="_blank" rel="noopener" title="LinkedIn" class="fab fa-linkedin"></a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li><a href="//twitter.com/SophiaSu0205" target="_blank" rel="noopener" title="Twitter" class="fab fa-twitter"></a></li>
+
+
+
+
+
+
+
+<li><a href="//researchgate.net/profile/Chun_Su" target="_blank" rel="noopener" title="Research Gate"><i class="ai ai-researchgate"></i></a></li>
+
+
+<li><a href="mailto:sckinta@gmail.com" target="_blank" title="Email" class="far fa-envelope"></a></li>
+
+      </ul>
+  
+  <p class="copyright">
+    
+      &copy; 2020
+      
+        LEARNING WITH SCKINTA
+      
+    .
+    Powered by <a href="//gohugo.io" target="_blank" rel="noopener">Hugo</a>
+  </p>
+</footer>
+<a id="back-to-top" href="#" class="fas fa-arrow-up fa-2x"></a>
+
+      
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/html.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/css.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/js.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/toml.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+
+  
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.js"></script>
+  <script src=/js/util.js></script>
+  <script src=/js/main.js></script>
+  <script src=/js/add-on.js></script>
+  
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'learning with sckinta', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+    </div>
+  </body>
+</html>
