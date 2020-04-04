@@ -106,15 +106,10 @@ To use aws.s3, we first need to have a AWS account and set up s3 bucket. To set 
 
 To obtain the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, drop down your profile name on the top right menu, click "My Security Credentials", 
 
-```{r, echo=F, out.width = "100px"}
-knitr::include_graphics("pics/pic1.png")
-```
+![](https://i.ibb.co/nRL7M41/pic1.png)
 
 Then at "Access keys (access key ID and secret access key" click "Create New Access Key". Remember to save this, you cannot find this access key listed later. 
-
-```{r, echo=F, out.width = "300px", out.height="150px"}
-knitr::include_graphics("pics/pic2.png")
-```
+![](https://i.ibb.co/89ZXJrd/pic2.png)
 
 #### saveData
 In the [demo app](https://sckinta.shinyapps.io/SpeakerSignup/), each user entry include text input and a picture file. To make the picture file and text input match for each entry, I keep the same prefix and save new image name as one variable in data.frame.
