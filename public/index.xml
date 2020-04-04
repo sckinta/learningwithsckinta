@@ -6,10 +6,19 @@
     <description>Recent content on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 11 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 30 Mar 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>External persistent data I/O using ShinyApp</title>
+      <link>/post/2020-03-30_shinyapp_tips/</link>
+      <pubDate>Mon, 30 Mar 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-03-30_shinyapp_tips/</guid>
+      <description>Shiny App is a fantastic application in Rstudio and makes the data processing more accessible (and fun!). Most easy shiny apps are made to represent data based on a given user input which is read into memory or temperal file by R and spit out tables or figures in the same process. However, to make an app that need to keep the user input data for persistent storage and present in the future process require some external data I/O.</description>
+    </item>
     
     <item>
       <title>All about git</title>

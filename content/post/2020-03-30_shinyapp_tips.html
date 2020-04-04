@@ -1,0 +1,455 @@
+---
+title: 'External persistent data I/O using ShinyApp'
+author: "Sckinta"
+date: "2020-03-30"
+categories: ["r"]
+tags: ["shinyapp"]
+output: 
+  blogdown::html_page:
+          toc: false
+---
+
+
+
+<p>Shiny App is a fantastic application in Rstudio and makes the data processing more accessible (and fun!). Most easy shiny apps are made to represent data based on a given user input which is read into memory or temperal file by R and spit out tables or figures in the same process. However, to make an app that need to keep the user input data for persistent storage and present in the future process require some external data I/O. One of example app is survey app, in which user inputs will be accumulated for future presentation. Shiny rstudio presents this topic in an <a href="https://shiny.rstudio.com/articles/persistent-data-storage.html">article</a> written in 2017. However, my recent trial of those methods caused some troubles, either the packages/functions are deprecated or more strict autherization applied. In this post, I am going to introduce three persistent storage I have tried in my recent projects and complement that 2017 article with the updates.</p>
+<div id="data-input-app" class="section level2">
+<h2>Data input app</h2>
+<p>To start, I want to mention a <a href="https://gupsych.github.io/tquant/data-input.html">tutorial</a> on how to make survey app. In the tutorial, it mentioned how to read, save and re-load user input data from shiny app on a local machine. The critical part include:</p>
+<ul>
+<li>Create a table field to store each widget input (keep widget inputId and table field name same)</li>
+<li>Save each user input data with a unique name in provided storage directory (<code>sprintf(&quot;%s_%s.rds&quot;, as.integer(Sys.time()), digest::digest(data))</code>)<br />
+</li>
+<li>Reload data file by file and field by field.<br />
+</li>
+<li>Reset survey by <code>update</code> widget</li>
+</ul>
+<p>In the tutorial example, the “provided storage directory” is in a local machine. Here I am going to introduce three exnternal storage methods (AWS, dropbox and google spreadsheet) in the context of this dummy <a href="https://sckinta.shinyapps.io/SpeakerSignup/">survey app</a> I experiment with for Rladies Philly mentorship program.</p>
+<p>In this dummy app, following widgets were made.</p>
+<pre class="r"><code># define global options
+types=c(&quot;Speaker&quot;,&quot;Mentor&quot;)
+expertises=c(&quot;Academia to industry transition&quot;,&quot;Transition to new field/industry&quot;,&quot;Project/team management&quot;,&quot;Making data science more accessible&quot;,&quot;Working with big datasets&quot;,&quot;Language research&quot;,&quot;Data cleaning&quot;,&quot;Capacity building&quot;,&quot;Global health&quot;,&quot;Data visualization&quot;,&quot;Package creation&quot;,&quot;Geospatial science&quot;,&quot;Ecological modeling&quot;,&quot;Mental health&quot;,&quot;Building scalable tools&quot;,&quot;Reproducible research&quot;,&quot;App development&quot;)
+employment=c(&quot;Academic&quot;,&quot;Pharmaceutical&quot;,&quot;Financial&quot;,&quot;Business&quot;,&quot;Research&quot;,&quot;Quality assurance&quot;,&quot;Government/public sector&quot;)
+meets=c(&quot;In-person&quot;,&quot;Remote (e.g. by phone or online)&quot;)
+genders=c(&quot;She/her&quot;, &quot;He/him&quot;, &quot;They/them&quot;,&quot;Other&quot;)
+
+
+# define user input widgets, put inputId into a field vector for late saveData/loadData
+fields &lt;- c(&quot;name_wig&quot;, &quot;gender_wig&quot;, &quot;linkedin_wig&quot;, &quot;photo_wig&quot;,
+            &quot;type_wig&quot;, &quot;expertise_wig&quot;, &quot;employment_wig&quot;, &quot;meet_wig&quot;)
+
+# user input widgets
+name_wig &lt;- textInput(&quot;name_wig&quot;, &quot;Name:&quot;, &quot;&quot;)
+gender_wig  &lt;- radioButtons(
+        &quot;gender_wig&quot;, 
+        &quot;Pronouns:&quot;,
+        genders, 
+        inline = TRUE,
+        selected = &quot;none&quot;
+)
+linkedin_wig &lt;- textInput(&quot;linkedin_wig&quot;,&quot;LinkedIn Profile Link:&quot;,&quot;&quot;)
+photo_wig &lt;- fileInput(&quot;photo_wig&quot;, &quot;Your photo (eg. .jpeg, .png)&quot;, accept = c(&quot;jpeg&quot;,&quot;png&quot;))
+type_wig &lt;- checkboxGroupInput(
+        &quot;type_wig&quot;,
+        &quot;Available as mentor and/or speaker?&quot;, 
+        types
+)
+expertise_wig &lt;- selectizeInput(
+        inputId = &quot;expertise_wig&quot;,
+        label = &quot;Areas of expertise&quot;, 
+        choices =  expertises,
+        multiple = T,
+        options = list(create = TRUE)
+)
+employment_wig &lt;- selectizeInput(
+        inputId = &quot;employment_wig&quot;,
+        label = &quot;Primary type of employment&quot;, 
+        choices =  employment,
+        multiple = F,
+        options = list(create = TRUE)
+)
+meet_wig &lt;- checkboxGroupInput(
+        &quot;meet_wig&quot;,
+        &quot;If you are willing to serve as a mentor, \nwhat is your preferred method of communication with your mentees?&quot;, 
+        meets
+)
+
+# button widgets
+clear_wig &lt;- actionButton(&quot;clear&quot;, &quot;Clear Form&quot;)
+submit_wig &lt;- actionButton(&quot;submit&quot;, &quot;Submit&quot;)</code></pre>
+</div>
+<div id="aws" class="section level2">
+<h2>AWS</h2>
+<p>In 2017 rstudio artical, aws.s3 package is used for communication between app and AWS.S3 external database. aws.s3 can be installed through.</p>
+<pre class="r"><code>install.packages(&quot;aws.s3&quot;, repos = &quot;https://cloud.R-project.org&quot;)</code></pre>
+<p><em>When I was making the app, the CRAN repo was orphan. The <a href="https://github.com/cloudyr/aws.s3">github repo of aws.s3</a> could not easily be installed while publishing the app on shinyapps.io or rstudio connect, because their github repo missed creator assignment in DESCRIPTION. Also Now it is back to normal with new <a href="https://github.com/cloudyr/aws.s3/issues/335">commit</a>.</em></p>
+<div id="authentication" class="section level4">
+<h4>Authentication</h4>
+<p>Next step is to set up aws.s3, same as 2017 rstudio artical, use the code below to set up in R</p>
+<pre class="r"><code>s3BucketName &lt;- &quot;&lt;bucket_name&gt;&quot;
+Sys.setenv(&quot;AWS_ACCESS_KEY_ID&quot; = &quot;&lt;AWS_ACCESS_KEY_ID&gt;&quot;,
+           &quot;AWS_SECRET_ACCESS_KEY&quot; = &quot;&lt;AWS_SECRET_ACCESS_KEY&gt;&quot;,
+           &quot;AWS_DEFAULT_REGION&quot; = &quot;us-east-2&quot;)</code></pre>
+<p>To use aws.s3, we first need to have a AWS account and set up s3 bucket. To set up a s3 bucket, you can sign in to the <a href="https://aws.amazon.com/console/">Console</a> and click S3 under “Storage”. Under Amazon S3, you can create a bucket with a unique bucket name (Keep this name to <code>s3BucketName</code>) and selected region (Remember this selected region, it will become value for <code>AWS_DEFAULT_REGION</code>. Mine is us-east-2). Then you will be back to the bucket list page.</p>
+<p>To obtain the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, drop down your profile name on the top right menu, click “My Security Credentials”,</p>
+<p><img src="pics/pic1.png" width="100px" /></p>
+<p>Then at “Access keys (access key ID and secret access key” click “Create New Access Key”. Remember to save this, you cannot find this access key listed later.</p>
+<p><img src="pics/pic2.png" width="300px" height="150px" /></p>
+</div>
+<div id="savedata" class="section level4">
+<h4>saveData</h4>
+<p>In the <a href="https://sckinta.shinyapps.io/SpeakerSignup/">demo app</a>, each user entry include text input and a picture file. To make the picture file and text input match for each entry, I keep the same prefix and save new image name as one variable in data.frame.</p>
+<p>The <code>saveData</code> function code:</p>
+<pre class="r"><code>saveData &lt;- function(input) {
+        # create a empty data frame
+        data &lt;- data.frame(matrix(nrow=1,ncol=0))
+        # loop through every field
+        for (x in fields) {
+                var &lt;- input[[x]]
+                if (x == &quot;photo_wig&quot; &amp; length(var)!=0){
+                  # fileInput widget with value
+                        img_file=var$datapath
+                        if (grepl(&quot;\\.jpg|\\.JPG|\\.jpeg|\\.JPEG&quot;,img_file)){
+                                img_format=&quot;.jpeg&quot;
+                        }
+                        if (grepl(&quot;\\.png|\\.PNG&quot;,img_file)){
+                                img_format=&quot;.png&quot;
+                        }
+                }else if (x == &quot;photo_wig&quot; &amp; length(var)==0){
+                  # fileInput widget without value, assign a place holder image saved in bucket
+                        img_file=&quot;unknown.jpg&quot;
+                }
+                else{
+                        if (length(var)==0){
+                          # text widgets without value
+                                data[[x]] &lt;- &quot; &quot;
+                        }
+                        else if (length(var) &gt; 1 ) {
+                          # text widgets (checkboxGroupInput) with multiple values
+                                
+                                data[[x]] &lt;- list(var)
+                        } else {
+                          # text widgets with single value
+                                data[[x]] &lt;- var
+                        }
+                }
+        }
+        # input timestamp
+        data$submit_time &lt;- date()
+        
+        # Create a unique file name
+        name1=as.integer(Sys.time())
+        name2=digest::digest(data)
+        fileName &lt;- sprintf(
+                &quot;%s_%s.rds&quot;, 
+                name1, 
+                name2
+        )
+        
+        # rename imagefilename and save image file to s3
+        if (img_file!=&quot;unknown.jpg&quot;){
+                img_newName &lt;-sprintf(
+                        paste0(&quot;%s_%s&quot;,img_format), 
+                        name1, 
+                        name2
+                )
+                file.rename(from=img_file, to=file.path(tempdir(),img_newName))
+                # save the image file to aws s3
+                aws.s3::put_object(
+                  file = file.path(tempdir(),img_newName), 
+                  object = img_newName, 
+                  bucket = s3BucketName, 
+                  check_region = F, acl = &quot;public-read&quot;
+                  )
+        }else{
+                img_newName = &quot;unknown.jpg&quot;
+        }
+        data[&quot;photo_wig&quot;]=paste0(&quot;https://rladiesmentor.s3.us-east-2.amazonaws.com/&quot;,img_newName)
+        
+        # save df as rds to the aws s3
+        aws.s3::s3save(data, bucket = s3BucketName, object = fileName)
+        
+        
+}</code></pre>
+</div>
+<div id="loaddata" class="section level4">
+<h4>loadData</h4>
+<p>To retrive the data from bucket, we can use following <code>loadData</code> function</p>
+<pre class="r"><code>loadData &lt;- function() {
+        # read all the rds files into a list
+        files &lt;- sapply(aws.s3::get_bucket(s3BucketName), function(x){x[[&quot;Key&quot;]]})
+        files &lt;- files[grepl(&quot;\\.rds&quot;,files)]
+        if (length(files) == 0) {
+                # create an empty data frame with additional timestamp column if no entries at aws s3
+                field_list &lt;- c(fields, &quot;submit_time&quot;)
+                data &lt;- data.frame(matrix(ncol = length(field_list), nrow = 0))
+                names(data) &lt;- field_list
+        } else {
+                # load data s3load entry by entry if there are entries at aws s3
+                data &lt;- lapply(files, function(x) {
+                        aws.s3::s3load(x, bucket = s3BucketName)
+                        data
+                })
+                
+                # concatenate all data together into one data.frame
+                data &lt;- do.call(rbind, data)
+        }
+        
+        colnames(data) = c(&quot;name&quot;,&quot;pronoun&quot;,&quot;linkedin&quot;, &quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;,&quot;submit.timestamp&quot;,&quot;photo.link&quot;)
+        
+
+        # make image src as one output column
+        out = tibble(
+                photo=sapply(data$photo.link,function(pic){paste0(&#39;&lt;img src=&#39;,pic,&#39; height=52&gt;&lt;/img&gt;&#39;)})
+        )
+        # make name column a link
+        out = out %&gt;%
+                mutate(name=mapply(function(url,text){paste0(&quot;&lt;a href=&#39;&quot;,url,&quot;&#39;&gt;&quot;,text,&quot;&lt;/a&gt;&quot;)}, data$linkedin, data$name))
+        
+        # output data frame for dataTableRender
+        out = bind_cols(
+                out %&gt;% as.data.frame(),
+                data[,c(&quot;pronoun&quot;,&quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;)]
+        )
+        out
+}</code></pre>
+<p>To make the image file readable by link, you have to change the bucket public access permission, and make anyone can read it.</p>
+</div>
+</div>
+<div id="dropbox" class="section level2">
+<h2>Dropbox</h2>
+<p><code>rdrop2</code> is the package R used to communicate with dropbox, and can be directly installed from CRAN.</p>
+<div id="authentication-1" class="section level4">
+<h4>Authentication</h4>
+<p>After installation, we need to authenticate R to access your dropbox (like AWS authentication key). Instead of obtaining directly from website, first time <code>drop_auth()</code> will direct you to web browser for dropbox authentication.</p>
+<pre class="r"><code>library(rdrop2)
+# you just need to run this part once (no need included in shinyapp code)
+drop_auth()
+
+# for remote use (deploy app to shinyapps.io or rstudio connect), you can save your auth to rds and load it to host platform
+token &lt;- drop_auth()
+saveRDS(token, file = &quot;token.rds&quot;)</code></pre>
+<p>Caution: this token authorize anyone with token file an access to all the files in your dropbox account.</p>
+<p>When you are ready to use the token to allow access the data at remote setting, you can do</p>
+<pre class="r"><code># this part should be included in your shinyapp code
+token &lt;- load(&quot;token.rds&quot;)
+drop_acc(dtoken = token)</code></pre>
+</div>
+<div id="savedata-1" class="section level4">
+<h4>saveData</h4>
+<p>Unlike AWS S3, I choose to aggregate individual entries into one csv file (You can do the same thing in AWS S3 too). The <code>saveData</code> function for dropbox is</p>
+<pre class="r"><code>saveData &lt;- function(input) {
+        # read previously stored csv file
+        old_df = rdrop2::drop_read_csv(&quot;mentors.csv&quot;)
+        
+        # save one user entry to a new data frame (like AWS above)
+        data &lt;- data.frame(matrix(nrow=1,ncol=0))
+        for (x in fields) {
+                var &lt;- input[[x]]
+                if (x == &quot;photo_wig&quot; &amp; length(var)!=0){
+                        img_file=var$datapath
+                        if (grepl(&quot;\\.jpg|\\.JPG|\\.jpeg|\\.JPEG&quot;,img_file)){
+                                img_format=&quot;.jpeg&quot;
+                        }
+                        if (grepl(&quot;\\.png|\\.PNG&quot;,img_file)){
+                                img_format=&quot;.png&quot;
+                        }
+                }else if (x == &quot;photo_wig&quot; &amp; length(var)==0){
+                        img_file=&quot;unknown.jpg&quot;
+                }
+                else{
+                        if (length(var)==0){
+                                data[[x]] &lt;- &quot; &quot;
+                        }
+                        else if (length(var) &gt; 1 ) {
+                                # handles lists from checkboxGroup and multiple Select
+                                data[[x]] &lt;- list(var)
+                        } else {
+                                # all other data types
+                                data[[x]] &lt;- var
+                        }
+                }
+        }
+        data$submit_time &lt;- date()
+        # Create a unique file name
+        name1=as.integer(Sys.time())
+        name2=digest::digest(data)
+        fileName &lt;- sprintf(
+                &quot;%s_%s.rds&quot;, 
+                name1, 
+                name2
+        )
+        
+        # rename and save imagefilename
+        if (img_file!=&quot;unknown.jpg&quot;){
+                img_newName &lt;-sprintf(
+                        paste0(&quot;%s_%s&quot;,img_format), 
+                        name1, 
+                        name2
+                )
+                file.rename(from=img_file, to=file.path(tempdir(),img_newName))
+                rdrop2::drop_upload(file.path(tempdir(),img_newName))
+        }else{
+                img_newName = &quot;unknown.jpg&quot;
+        }
+        
+        # add phone name to data column
+        data[&quot;photo_wig&quot;]=img_newName
+        colnames(data) = c(&quot;name&quot;,&quot;pronoun&quot;,&quot;linkedin&quot;, &quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;,&quot;submit.timestamp&quot;,&quot;photo.link&quot;)
+        
+        # append new entry to the old_df
+        new_df = bind_rows(old_df, data)
+        # write new_df csv to a temp file
+        write.csv(new_df, file=file.path(tempdir(),&quot;mentors.csv&quot;))
+        # upload this temp file to dropbox
+        rdrop2::drop_upload(file.path(tempdir(),&quot;mentors.csv&quot;))
+}</code></pre>
+</div>
+<div id="loaddata-1" class="section level4">
+<h4>loadData</h4>
+<p>From above example, you may notice that all the file need to be saved at local for a moment before uploading dropbox. In other words, rdrop2 only deals file level data. Thus, if you want to retrieve unstructural file (not csv), you have to download the file to local, then show it. It will not work for links (because no way to set public access permissions in dropbox). Thus at loadData, I cannot make the image readable unless I download data to the local. The following example only show the data frame load, comment out the image part.</p>
+<pre class="r"><code>loadData &lt;- function() {
+        # read csv
+        data &lt;- drop_read_csv(&quot;mentors.csv&quot;)
+        if (nrow(data) == 0) {
+                # create empty data frame with correct columns
+                field_list &lt;- c(fields, &quot;submit_time&quot;)
+                data &lt;- data.frame(matrix(ncol = length(field_list), nrow = 0))
+                names(data) &lt;- field_list
+        } 
+        
+        # drop_get(&quot;jigglypuff.jpeg&quot;)
+        # data
+        # out = tibble(
+        #         photo=sapply(data$photo.link,function(pic){paste0(&#39;&lt;img src=&#39;,pic,&#39; height=52&gt;&lt;/img&gt;&#39;)})
+        # )
+        # out = out %&gt;%
+        #         mutate(name=mapply(function(url,text){paste0(&quot;&lt;a href=&#39;&quot;,url,&quot;&#39;&gt;&quot;,text,&quot;&lt;/a&gt;&quot;)}, data$linkedin, data$name))
+        # out = bind_cols(
+        #         out %&gt;% as.data.frame(),
+        #         data[,c(&quot;pronoun&quot;,&quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;)]
+        # )
+        out=data[,c(&quot;name&quot;,&quot;pronoun&quot;,&quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;)]
+        out
+}</code></pre>
+</div>
+</div>
+<div id="googlesheets" class="section level2">
+<h2>googlesheets</h2>
+<p>Two packages <code>googledrive</code> and <code>googlesheets4</code> are required for googlesheet data I/O. The main reason is that googlesheets4 have updated their security setting and made spreadsheet direct writing impossible. The way to get around is to use <code>googledrive::drive_download</code> to download the file to local, update the dataframe and save to a local file with same name like before, then use <code>googledrive::drive_update</code> to push the new file to the google drive. It is very similar to <code>rdrop2</code> file-level communication method. (Note: both <code>googledrive</code> and <code>googlesheets4</code> needs <code>gargle_oauth</code>).</p>
+<div id="authentication-2" class="section level4">
+<h4>Authentication</h4>
+<p>Googlesheets used <code>gargle_oauth</code> to prompt a web page for authentication. The code to set up authentication at local</p>
+<pre class="r"><code># you just need to run this part once (no need included in shinyapp code)
+gargle::drive_auth()
+googlesheets4::sheets_auth()</code></pre>
+<p>Usually you do not need to explicitly prompt auth using above code. Using functions in <code>googledrive</code> and <code>googlesheets4</code> will automatically trigger the authentication.</p>
+<p>After authentication, you can check your tokens by</p>
+<pre class="r"><code>gargle::gargle_oauth_sitrep()</code></pre>
+<p>The authentication step automatically generated token files under <code>~/.R/gargle/gargle-oauth/</code>. If the app work in local, that is all we need to do. If you want to deploy to hosting platform, we need to make this authentication non-interactive (no need for web browser to prompt a page). One way is to make your token files available for remote server access.</p>
+<p>To make tokens available for remote server access, you can copy the email account authentication to the same directory app.R saved at. Since we have tokens associated with both <code>googledrive</code> and <code>googlesheets4</code>, we will end up have two token files. To move both token files to app directory. Using following shell code</p>
+<pre class="r"><code>mkdir .secret/
+cd .secret/
+cp ~/.R/gargle/gargle-oauth/*youremailname* .</code></pre>
+<p>When it is time to depoly, select .secret/ to upload to platform. In the app.R code, we just need to add following line to designate project-specific cache.</p>
+<pre class="r"><code>options(
+        gargle_oauth_cache = &quot;.secret&quot;,
+        gargle_oauth_email = TRUE
+)</code></pre>
+<p>This is not the most secure way, but easiest way. If you want to explore more secure way for this purpose, please ref to <a href="https://gargle.r-lib.org/articles/non-interactive-auth.html">non-interacive authentication in gargle</a></p>
+</div>
+<div id="savedata-2" class="section level4">
+<h4>saveData</h4>
+<p>As alreadly mentioned, googledrive use file-level communication. We first used <code>drive_fine</code> to find which spreadsheet to read, then download using <code>googledrive::drive_download</code>, finally update/unload spreadsheet <code>googledrive::drive_update</code>.</p>
+<pre class="r"><code>saveData &lt;- function(input) {
+        # download previous spreadsheet to tempfile
+        tmpDir=file.path(tempdir(),&quot;mentors.csv&quot;)
+        mentors=drive_find(pattern = &quot;mentors&quot;, type = &quot;spreadsheet&quot;)
+        drive_download(as_id(mentors), type=&quot;csv&quot;, path=tmpDir, overwrite=T)
+        
+        # read spreadsheet to df
+        df = read_csv(tmpDir)
+        
+        # read input to data
+        data &lt;- data.frame(matrix(nrow=1,ncol=0))
+        for (x in fields) {
+                var &lt;- input[[x]]
+                if (length(var)==0){
+                        data[[x]] &lt;- &quot; &quot;
+                }
+                else if (length(var) &gt; 1 ) {
+                        # handles lists from checkboxGroup and multiple Select
+                        data[[x]] &lt;- paste(var,collapse = &quot;, &quot;)
+                } else {
+                        # all other data types
+                        data[[x]] &lt;- var
+                }
+        }
+        
+        data$submit_time &lt;- Sys.time()
+        colnames(data) = c(&quot;name&quot;,&quot;pronoun&quot;,&quot;linkedin&quot;, &quot;email&quot;,&quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;,&quot;submit.timestamp&quot;)
+        
+        # append new data
+        df = bind_rows(df, data)
+        
+        # write into tempfile
+        write_csv(df, path=tmpDir, na=&quot; &quot;)
+        
+        # update mentors spreadsheet
+        mentors &lt;- mentors %&gt;% 
+          drive_update(
+                tmpDir,
+                name=&quot;mentors&quot;
+        )
+        # drive_rm(mentors)
+}</code></pre>
+</div>
+<div id="loaddata-2" class="section level4">
+<h4>loadData</h4>
+<p><code>googlesheets</code> have a function <code>read_sheet</code> to read googlesheets directly to data.frame.</p>
+<pre class="r"><code>loadData &lt;- function() {
+        # read spreadsheet
+        sheet_id=drive_find(pattern = &quot;mentors&quot;, type = &quot;spreadsheet&quot;)$id
+        data=read_sheet(sheet_id)
+        # data
+        names = tibble(
+                name=mapply(
+                        function(url,text){
+                                if(url!=&quot; &quot;){
+                                        paste0(&quot;&lt;a href=&#39;&quot;,url,&quot;&#39;&gt;&quot;,text,&quot;&lt;/a&gt;&quot;)
+                                }else if (url!=&quot; &quot;){
+                                        paste0(&quot;&lt;a href=&#39;&quot;,url,&quot;&#39;&gt;&quot;,text,&quot;&lt;/a&gt;&quot;)
+                                }
+                        }, 
+                        data$linkedin, data$name
+                        )
+        )
+        links = tibble(
+                links=mapply(
+                        function(email, linkedin,text){
+                                if(email!=&quot; &quot; &amp; linkedin==&quot; &quot;){
+                                        paste0(&quot;&lt;a href=mailto:&quot;,email,&quot;&gt;&quot;,&quot;Email&quot;,&quot;&lt;/a&gt;&quot;)
+                                } else if (linkedin!=&quot; &quot; &amp; email==&quot; &quot;){
+                                        paste0(&quot;&lt;a href=&#39;&quot;,linkedin,&quot;&#39;&gt;&quot;,&quot;LinkedIn&quot;,&quot;&lt;/a&gt;&quot;)
+                                } else {
+                                        paste(
+                                                paste0(&quot;&lt;a href=mailto:&quot;,email,&quot;&gt;&quot;,&quot;Email&quot;,&quot;&lt;/a&gt;&quot;),
+                                                paste0(&quot;&lt;a href=&#39;&quot;,linkedin,&quot;&#39;&gt;&quot;,&quot;LinkedIn&quot;,&quot;&lt;/a&gt;&quot;)
+                                        )
+                                }
+                        }, 
+                        data$email, data$linkedin, data$name
+                )
+        )
+        out = bind_cols(
+                names %&gt;% as.data.frame(),
+                data[,c(&quot;pronoun&quot;,&quot;signUp.type&quot;,&quot;expertises&quot;,&quot;primary.employment&quot;,&quot;preferred.mentor.method&quot;)],
+                links %&gt;% as.data.frame()
+        )
+        out
+}</code></pre>
+</div>
+</div>
+<div id="final-remarks" class="section level2">
+<h2>Final remarks</h2>
+<p>In this post, we introduce three ways to load and save data to external storage clound. AWS s3 is most secure and fleasible among three. It can store and load unstructure data easily, thus it does not require much memory cache from host server. But it is not free when data is very big. Dropbox can save both tubular and unstructural data, but retrieve unstructure requires downloading file to cache. Googlesheets can only read/save tubular data. Both dropbox and googlesheets have some secure concerns, but you can create a free account and designate that account for app development/test only to reduce concerns for security. The complete codes for finished app can be accessed from my <a href="https://github.com/sckinta/example_code/tree/master/shinyapp_examples">github</a>.</p>
+</div>
