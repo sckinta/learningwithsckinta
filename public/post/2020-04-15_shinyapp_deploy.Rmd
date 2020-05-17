@@ -1,0 +1,20 @@
+---
+title: 'ShinyApp deployment tips'
+author: "Sckinta"
+date: "2020-04-15"
+categories: ["r"]
+tags: ["shinyapp"]
+output: 
+  blogdown::html_page:
+      toc: false
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Making a beautiful shiny app is exciting. However, I frequently experience the frustration on the app deployment step. I subtly mentioned one example in the last month post about my experience with aws.s3 package installation on shinyapps.io. Here I am going to share some deployment tips I gained in hard way.
+
+## App hosting platforms
+Shiny apps can be hosted in multiple platforms. shinyapps.io and rstudio-connect are the most popular platforms to share the apps in public.  
+

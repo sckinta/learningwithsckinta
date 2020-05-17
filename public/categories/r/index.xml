@@ -6,10 +6,20 @@
     <description>Recent content in r on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 30 Mar 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 15 Apr 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>ShinyApp deployment tips</title>
+      <link>/post/2020-04-15_shinyapp_deploy/</link>
+      <pubDate>Wed, 15 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-04-15_shinyapp_deploy/</guid>
+      <description>Making a beautiful shiny app is exciting. However, I frequently experience the frustration on the app deployment step. I subtly mentioned one example in the last month post about my experience with aws.s3 package installation on shinyapps.io. Here I am going to share some deployment tips I gained in hard way.
+App hosting platforms Shiny apps can be hosted in multiple platforms. shinyapps.io and rstudio-connect are the most popular platforms to share the apps in public.</description>
+    </item>
     
     <item>
       <title>External persistent data I/O using ShinyApp</title>

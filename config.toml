@@ -26,7 +26,7 @@ math = true
   readingTime           = true
   # Sets which Social Share links appear in posts.
   # Options are twitter, facebook, reddit, linkedin, pinterest, email
-  socialShare           = ["twitter", "facebook", "reddit", "linkedin", "pinterest", "email"]
+  socialShare           = []
 
   [params.meta]
     # Sets the meta tag description
@@ -219,7 +219,7 @@ math = true
     # qq                  = "" # User ID Number
   # instagram             = "example"
   # tumblr                = ""
-  twitter               = "SophiaSu0205"
+  twitter               = "sckinta"
   # skype                 = ""
   # snapchat              = ""
   # pinterest             = "example"

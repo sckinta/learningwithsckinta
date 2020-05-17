@@ -1,0 +1,14 @@
+﻿workflow,caret,tidymodels
+required packages,"caret, recipes, rsample",tidymodels
+data split,initial_split(); training(); testing(),"initial_split; training, testing"
+feature engineer,recipe %>% step_*(),recipe %>% step_*()
+resample,trainControl(),vfold_cv()
+find hyperparameters grid,??,args(<model_function>)
+fit model,fit <- train(),specify model: model <- <model_function> %>% set_engine() %>% set_mode(); tune() in <model_function>
+,,specify workflow: wf <- workflow() %>% add_model() %>% add_recipe()
+,,"fit train data: fit <- wf %>% fit_resamples(resamples, control); wf %>% grid_tune(resamples, control, grid)"
+collect metrics,fit$results,fit %>% collect_metrics()
+predict value for train data,fit$pred,fit %>% collect_predictions()
+predict value for test data,"predict(fit, newdata, type=""prob"")",best_hyp <- fit %>% select_best(metric); wf <- wf %>% finalize_workflow(best_hyp); 
+,roc_auc(),last_fit <- wf %>% last_fit(); last_fit %>% collect_predictions(); last_fit %>% collect_metrics()
+importance of variable,varImp(),pull_workflow_fit(last_fit$.workflow[[1]]); vip()
