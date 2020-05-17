@@ -6,19 +6,19 @@
     <description>Recent content in Post on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 15 Apr 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 30 Apr 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>ShinyApp deployment tips</title>
-      <link>/post/2020-04-15_shinyapp_deploy/</link>
-      <pubDate>Wed, 15 Apr 2020 00:00:00 +0000</pubDate>
+      <title>ML pipeline with tidymodels vs. caret</title>
+      <link>/post/2020-04-30_caret_vs_tidymodels/</link>
+      <pubDate>Thu, 30 Apr 2020 00:00:00 +0000</pubDate>
       
-      <guid>/post/2020-04-15_shinyapp_deploy/</guid>
-      <description>Making a beautiful shiny app is exciting. However, I frequently experience the frustration on the app deployment step. I subtly mentioned one example in the last month post about my experience with aws.s3 package installation on shinyapps.io. Here I am going to share some deployment tips I gained in hard way.
-App hosting platforms Shiny apps can be hosted in multiple platforms. shinyapps.io and rstudio-connect are the most popular platforms to share the apps in public.</description>
+      <guid>/post/2020-04-30_caret_vs_tidymodels/</guid>
+      <description>As a DS beginner, I first came across ML in R by studying the book Hands-On Machine Learning with R. The book mainly focus package caret with general introductions about packages like recipe and h2o. Most examples use the workflow in which feature engineering is performed by recipe and modeling/learning part is done caret.
+It was a great pleasure to take tidymodels workshop hosted by Dr. Alison Hill last week.</description>
     </item>
     
     <item>

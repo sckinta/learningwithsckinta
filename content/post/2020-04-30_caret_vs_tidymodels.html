@@ -1,0 +1,403 @@
+---
+title: 'ML pipeline with tidymodels vs. caret'
+author: "Sckinta"
+date: "2020-04-30"
+categories: ["r"]
+tags: ["ML"]
+output: 
+  blogdown::html_page:
+          toc: false
+---
+
+
+
+<p>As a DS beginner, I first came across ML in R by studying the book <a href="https://bradleyboehmke.github.io/HOML/">Hands-On Machine Learning with R</a>. The book mainly focus package <code>caret</code> with general introductions about packages like <code>recipe</code> and <code>h2o</code>. Most examples use the workflow in which feature engineering is performed by <code>recipe</code> and modeling/learning part is done <code>caret</code>.</p>
+<p>It was a great pleasure to take <a href="https://www.tidymodels.org/">tidymodels</a> workshop hosted by <a href="https://twitter.com/apreshill">Dr. Alison Hill</a> last week. <code>tidymodels</code> was recently launched as a collection of packages for ML using tidyverse principles. It is built on <code>recipes</code> for feature engineering and <code>parsnip</code> as the major modeling package, and link ML steps together with <code>workflow</code>.</p>
+<p>In this post, I am going to present the general ML frameworks using <code>caret</code> and <code>tidymodels</code>, independently. The data used as an example is “Watson churn data” from <a href="https://modeldata.tidymodels.org/reference/index.html">modeldata</a></p>
+<div id="required-libraries-and-data" class="section level2">
+<h2>0. required libraries and data</h2>
+<p>Since tidymodels is a collection of packages like <code>tidyverse</code>, we can just <code>library(tidymodels)</code> to load all the required libraries for tidymodels pipeline.</p>
+<pre class="r"><code>library(tidymodels)</code></pre>
+<p>For the <code>caret</code> pipeline, additional helper pacakges, like <code>recipes</code> and <code>rsample</code>, were needed to process the data. Most of those packages are already collected in <code>tidymodels</code> pipeline.</p>
+<pre class="r"><code>library(caret)
+library(rsample)
+library(recipes)
+library(vip)</code></pre>
+<p>For the data, I used “Watson churn data” from modeldata which is also a part of <code>tidymodels</code>.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre class="r"><code>library(modeldata)
+data(wa_churn)
+# quick view and summarize data
+glimpse(wa_churn)
+# visdat::vis_miss(wa_churn)
+Hmisc::describe(wa_churn)
+
+# relevel factors
+wa_churn = wa_churn %&gt;% 
+        mutate(churn=relevel(churn, ref=&quot;No&quot;)) %&gt;% 
+        mutate(multiple_lines=relevel(multiple_lines, ref=&quot;No phone service&quot;)) %&gt;% 
+        mutate(internet_service=relevel(internet_service, ref=&quot;No&quot;)) %&gt;% 
+        mutate(online_security=relevel(online_security, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(online_backup=relevel(online_backup, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(device_protection=relevel(device_protection, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(tech_support=relevel(tech_support, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(streaming_tv=relevel(streaming_tv, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(streaming_movies=relevel(streaming_movies, ref=&quot;No internet service&quot;)) %&gt;% 
+        mutate(contract=relevel(contract, ref=&quot;Month-to-month&quot;))
+
+# to simplify the case here, we are going to remove missing variable
+wa_churn = wa_churn %&gt;% 
+        na.omit      </code></pre>
+</div>
+<div id="data-split" class="section level2">
+<h2>1. data split</h2>
+<p>Both frameworks use <code>rsample::initial_split</code> to split data to train and test. Here, we choose the standard 7:3 split between train and test, with stratifying on the target variable “churn”</p>
+<pre class="r"><code># split
+set.seed(123)
+data_splits = initial_split(wa_churn, strata=&quot;churn&quot;, prob=0.7)
+data_train=training(data_splits)
+data_test=testing(data_splits)</code></pre>
+<p>To stratify on the numeric variables, we can add <code>breaks</code> parameter.</p>
+<pre class="r"><code>initial_split(wa_churn, strata=&quot;tenure&quot;, prob=0.7, breaks=4)</code></pre>
+</div>
+<div id="feature-engineer" class="section level2">
+<h2>2. feature engineer</h2>
+<p>General <a href="http://www.feat.engineering/">feature engineer</a> steps include</p>
+<ul>
+<li>remove variables with zero variance or near zero variance: <code>step_zv</code>, <code>step_nzv</code></li>
+<li>lumping nominal variables: <code>step_other</code></li>
+<li>normalize (scale + center) numeric variables (specific for regression-based models): <code>step_scale</code>, <code>step_center</code>, <code>step_normalize</code></li>
+<li>encode nominal variables to dummy features: <code>step_novel</code> + <code>step_dummy</code>, <code>step_integer</code></li>
+<li>value transformation to fit normal distribution: <code>step_log</code>, <code>step_YeoJohnson</code>, <code>step_BoxCox</code></li>
+<li>feature dimension reduction: <code>step_pca</code></li>
+<li>dealing with missing values with imputation: <code>step_medianimpute</code>, <code>step_knnimpute</code>, <code>step_bagimpute</code></li>
+</ul>
+<p>Feature engineer is done by <code>recipes</code> in both <code>tidymodels</code> and <code>caret</code>. The functions in <code>recipes</code> starts with <code>step_*</code> and create blueprint for feature engineer. The complete list of step is at <a href="https://tidymodels.github.io/recipes/reference/index.html" class="uri">https://tidymodels.github.io/recipes/reference/index.html</a></p>
+<pre class="r"><code>rec &lt;- recipe(churn ~ ., data = wa_churn) %&gt;%
+        step_zv(all_predictors()) %&gt;% 
+        step_nzv(all_predictors())  %&gt;%
+        step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+        step_dummy(all_nominal(), -all_outcomes())</code></pre>
+<p>The blueprint will not change the data until it is <code>fit</code> in the modeling step. We can use <code>prep</code> and <code>bake</code> to see “transformed” data in data.frame.</p>
+<pre class="r"><code>rec %&gt;% 
+        prep(wa_churn) %&gt;% 
+        bake(wa_churn)</code></pre>
+<p>One reason to use <code>recipe</code> is to avoid <a href="https://www.quora.com/Whats-data-leakage-in-data-science">data leakage</a>. Data leakage is when information from outside the training data set is used to create the model.</p>
+</div>
+<div id="resample" class="section level2">
+<h2>3. resample</h2>
+<p>Resample methods is to split the data more within the train data. It will generate train set and validation set. Typical resample method include cross-validation (cv), repeated cross-validation (repeated cv), leave-one-out and boostrapping (with replacement).</p>
+<p>We can use <code>rsample::vfold_cv</code> for both caret and tidymodels pipeline.</p>
+<pre class="r"><code># 10 fold cross validation stratified on target variable churn
+cv_folds = rsample::vfold_cv(data=data_train, v=10, strata=churn)</code></pre>
+<p>However to make above <code>cv_folds</code> compatible with <code>caret</code>, we need to used <code>rsample2caret</code> to convert a <code>trainControl</code> list</p>
+<pre class="r"><code>cv_folds_cr = rsample2caret(cv_folds)
+cv_folds_trCtrl = trainControl(
+        method = &quot;cv&quot;,
+        verboseIter = FALSE,
+        classProbs = TRUE,
+        summaryFunction = twoClassSummary,
+        returnResamp = &quot;final&quot;,
+        savePredictions = &quot;final&quot;,
+        index = cv_folds_cr$index,
+        indexOut = cv_folds_cr$indexOut
+  )</code></pre>
+<p>Or we can simply use caret function <code>trainControl</code> function to generate split. However, no stratify option is available here.</p>
+<pre class="r"><code>cv_folds_trCtrl = trainControl(method = &quot;cv&quot;, number=10)</code></pre>
+</div>
+<div id="hyperparameters-grid" class="section level2">
+<h2>4. hyperparameters grid</h2>
+<p>A hyperparameter is a parameter whose value is set before the learning process begins. It is distinguished from other parameters by the fact that it is not used for fitting the machine to the training set. Itself presents the model. For different models, it usually have different number of hyperparameters you can tune. Here I choose to use random forest to model the data. The hyperparameters for random forest from <code>ranger</code> include</p>
+<ol style="list-style-type: decimal">
+<li>the number of tree – <code>num.trees</code> or <code>trees</code></li>
+<li>depth of tree – <code>max.depth</code></li>
+<li>number of features to consider at every split – <code>mtry</code></li>
+<li>minimum number of samples required to split a node – <code>min.node.size</code> or <code>min_n</code></li>
+<li>whether using boostrapping to select samples for training – <code>replace</code>.</li>
+<li>fraction of observation to sample – <code>sample.fraction</code>. always go with <code>replace</code></li>
+</ol>
+<p>Rule of thumb to start is</p>
+<ul>
+<li><code>num.trees</code> start with 10x p (p means number of features).</li>
+<li><code>max.depth</code></li>
+<li><code>mtry</code>: sqrt(p) for classification and p/3 for regression</li>
+<li><code>min.node.size</code> default values of 1 for classification and 5 for regression</li>
+<li><code>replace</code> and <code>sample.fraction</code>: Default is 1 for sampling with replacement and 0.632 for sampling without replacement.</li>
+</ul>
+<pre class="r"><code>hyp_grid = expand.grid(
+        trees = c(500,1000),
+        mtry=c(5,15),
+        min_n=c(10,20)
+)</code></pre>
+<p>The hyperparameters can be checked by function <code>args(rand_forest)</code></p>
+<p><code>rf</code> method (from RandomForest) for <code>caret</code> has only one hyperparameter (mtry) by default.</p>
+<pre class="r"><code>hyp_grid_cr = expand.grid(
+        mtry=5:10
+)</code></pre>
+<p>?? not sure how to find tunable hyperparameters for different methods in caret.</p>
+</div>
+<div id="fit-model" class="section level2">
+<h2>5. fit model</h2>
+<p>Here is the step that tidymodel and caret start to diverge in syntax. Typical tidymodel build a model using <code>workflow</code> pipe which specify fomular/recipe and model, while caret uses <code>train</code> to fit model.</p>
+<p><strong>tidymodel</strong></p>
+<p>default version of model fit <code>fit_resamples</code></p>
+<pre class="r"><code># without grid_tune -&gt; fit_resamples() at train
+rf_tm &lt;- rand_forest() %&gt;% 
+        set_engine(&quot;ranger&quot;, importance=&quot;permutation&quot;) %&gt;% 
+        set_mode(&quot;classification&quot;)
+
+rf_tm_wf &lt;- workflow() %&gt;% 
+        add_model(rf_tm) %&gt;% 
+        add_recipe(rec)
+
+set.seed(123)
+default_tm_fit= rf_tm_wf %&gt;% 
+        fit_resamples(
+                resamples = cv_folds,
+                control = control_resamples(save_pred = TRUE)
+                )</code></pre>
+<p>grid version of model fit <code>grid_tune</code></p>
+<pre class="r"><code># with grid_tune -&gt; set tune() at model, use tune_grid() at train
+rf_tm &lt;- rand_forest(
+                mtry=tune(), 
+                trees=tune(), 
+                min_n=tune()
+        ) %&gt;% 
+        set_engine(&quot;ranger&quot;, importance=&quot;impurity&quot;) %&gt;% 
+        set_mode(&quot;classification&quot;)
+
+rf_tm_wf &lt;- workflow() %&gt;% 
+        add_model(rf_tm) %&gt;% 
+        add_recipe(rec)
+
+set.seed(123)
+grid_tm_fit = rf_tm_wf %&gt;% 
+        tune_grid(resamples = cv_folds,
+            grid = hyp_grid,
+                control = control_grid(save_pred = TRUE)
+            )</code></pre>
+<p>Notes: 1. <code>control</code> specification will be <code>control_grid()</code> in <code>grid_tune()</code> 2. <code>grid</code> parameter here can also be a integer which test for top N parameters.</p>
+<p>?? not sure how to print out default hyperparameters. Follow the thread <a href="https://github.com/tidymodels/parsnip/issues/235" class="uri">https://github.com/tidymodels/parsnip/issues/235</a></p>
+<p><strong>caret</strong></p>
+<p>default version of model fit</p>
+<pre class="r"><code># without hyp grid
+set.seed(123)
+default_cr_fit=train(
+        rec,
+        data = data_train,
+        method = &quot;rf&quot;,
+        trControl = cv_folds_trCtrl,
+        metric = &quot;ROC&quot;
+)</code></pre>
+<p>grid version of model fit</p>
+<pre class="r"><code># with grid --- tuneGrid
+set.seed(123)
+grid_cr_fit=train(
+        rec,
+        data = data_train,
+        method = &quot;rf&quot;,
+        trControl = cv_folds_trCtrl,
+        tuneGrid = hyp_grid_cr,
+        metric = &quot;ROC&quot;
+)</code></pre>
+</div>
+<div id="collect-metrics" class="section level2">
+<h2>6. collect metrics</h2>
+<p>Metrics are used to determine how good the model fit. For classification problem, accuracy and ROC/AUC are commonly used. For regression problem, RSEM is the most commonly one.</p>
+<p>We used <code>collect_metrics</code> in <code>tidymodels</code></p>
+<pre class="r"><code># for default model
+default_tm_fit %&gt;% collect_metrics()
+
+# for grid tune model
+grid_tm_fit %&gt;% collect_metrics()</code></pre>
+<p>list <code>results</code> stores metrics for <code>caret</code></p>
+<pre class="r"><code>default_cr_fit$results</code></pre>
+<p>From the results, we can tell that <code>train</code> fit 3 hyperparameters by default.</p>
+</div>
+<div id="collect-prediction-for-training-data" class="section level2">
+<h2>7. collect prediction for training data</h2>
+<p>Besides model metrics, we also care about what predicted value of target variable is in training data.</p>
+<p><strong>tidymodels</strong></p>
+<p>To see predicted target value for data_train, we can use <code>collect_predictions</code>.</p>
+<pre class="r"><code>default_tm_fit %&gt;% 
+        collect_predictions()
+
+# plot auc
+autoplot(
+        roc_curve(
+                default_tm_fit %&gt;% collect_predictions(), churn, .pred_Yes
+        )
+)</code></pre>
+<p><em>Notes: collect_predictions() only works when specifying <code>save_pred = TRUE</code> in control.</em></p>
+<p><strong>caret</strong></p>
+<pre class="r"><code>default_cr_fit$pred %&gt;% tbl_df
+
+# plot auc
+autoplot(
+        roc_curve(
+                default_cr_fit$pred %&gt;% tbl_df, 
+                obs, Yes
+        )
+)</code></pre>
+<p><em>For both caret and tidymodels, it is possible that each row of the original data point might be represented multiple times per tuning paramete if boostrap or repeated cv is used</em></p>
+</div>
+<div id="collect-prediction-for-testing-data" class="section level2">
+<h2>8. collect prediction for testing data</h2>
+<p>For default fit, only one set of hyperparameters is specified, thus we can just apply the fit model to <code>data_test</code>. However, for grid fit, we end up with multiple sets of hyperparameters. Thus, before fitting model, we need to pick the best set of hyperparameters based on metrics on training data (which is summarized using specified rsample method), then apply the best model to test_data</p>
+<p><strong>tidymodels</strong></p>
+<p><code>last_fit</code> is a function that is applied to workflow and fits to test data. By default, it generates predictions that can be reported by <code>collect_prediction</code> (no need to specify <code>control</code> in the fit). We can also use <code>collect_metrics</code> to check the metrics in testing data.</p>
+<pre class="r"><code># default
+default_last_fit = rf_tm_wf %&gt;% 
+        last_fit(split = data_splits)
+
+default_last_fit %&gt;% 
+        collect_metrics()
+
+default_last_fit %&gt;% 
+        collect_predictions()</code></pre>
+<p>To select best set of hyperparameters from <code>grid_tune</code>, we use <code>select_best</code> by specifying which metrics to use. Then we apply this set of hyperparameters to original workflow by <code>finalize_workflow</code>. Finally, like default, apply <code>last_fit</code> to the best workflow and get prediction and metrics for testing data</p>
+<pre class="r"><code># grid tune
+best_hyp &lt;- grid_tm_fit %&gt;% 
+        select_best(metric = &quot;roc_auc&quot;)
+
+best_wf &lt;- rf_tm_wf %&gt;%
+        finalize_workflow(best_hyp)
+
+grid_last_fit &lt;- best_wf %&gt;% 
+  last_fit(split = data_splits)
+
+grid_last_fit %&gt;% 
+        collect_metrics()
+
+grid_last_fit %&gt;% 
+        collect_predictions()</code></pre>
+<p><strong>caret</strong></p>
+<p><code>predict</code> function can be directly applied to fitted model to test data. For grid fit, it will automatically detect the best hyperparameters (here mtry=5) and apply it to test data.</p>
+<pre class="r"><code># default
+test_prediction &lt;- predict(
+    default_cr_fit,
+    newdata = data_test,
+    type = &quot;prob&quot;) %&gt;%
+  as_tibble() %&gt;%
+        transmute(estimate=Yes) %&gt;%  # for binary result we can randomly pick one, it will be same roc_auc
+  add_column(churn = data_test$churn) 
+
+## auc
+roc_auc(test_prediction, churn, estimate)$.estimate
+## accuracy
+test_prediction %&gt;% 
+        mutate(.pred=ifelse(estimate &gt; 0.5, &quot;Yes&quot;,&quot;No&quot;)) %&gt;% 
+        summarise(accuracy=mean(.pred==churn)) %&gt;% 
+        pull(accuracy)</code></pre>
+<pre class="r"><code># grid
+# best hyp
+grid_cr_fit$results %&gt;% 
+        slice(which.max(ROC))
+
+test_prediction2 &lt;- predict(
+    grid_cr_fit,
+    newdata = data_test,
+    type = &quot;prob&quot;) %&gt;%
+  as_tibble() %&gt;%
+        transmute(estimate=Yes) %&gt;%  # for binary result we can randomly pick one, it will be same roc_auc
+  add_column(churn = data_test$churn) 
+
+## auc
+roc_auc(test_prediction2, churn, estimate)$.estimate
+## accuracy
+test_prediction2 %&gt;% 
+        mutate(.pred=ifelse(estimate &gt; 0.5, &quot;Yes&quot;,&quot;No&quot;)) %&gt;% 
+        summarise(accuracy=mean(.pred==churn)) %&gt;% 
+        pull(accuracy)</code></pre>
+</div>
+<div id="importance-of-variables" class="section level2">
+<h2>9. importance of variables</h2>
+<p>Last, we can use fit result to find most important variables by <code>vip</code> package or caret function <code>varImp</code>. Be aware that, for <code>tidymodels</code> different <code>importance</code> specified in the model will result in different ranks</p>
+<p><strong>tidymodels</strong></p>
+<pre class="r"><code>rf_fit &lt;- pull_workflow_fit(default_last_fit$.workflow[[1]])
+vip::vip(rf_fit)$data
+vip::vip(rf_fit, geom = &quot;point&quot;)</code></pre>
+<p>??model-specific variable importance scores are currently not available for objects of class “_rangermodel_fit&quot;</p>
+<p><strong>caret</strong></p>
+<pre class="r"><code>varImp(default_cr_fit, scale = TRUE)$importance %&gt;% tbl_df</code></pre>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>To summarize, refer to following table</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">workflow</th>
+<th align="left">caret</th>
+<th align="left">tidymodels</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">required packages</td>
+<td align="left">caret, recipes, rsample</td>
+<td align="left">tidymodels</td>
+</tr>
+<tr class="even">
+<td align="left">data split</td>
+<td align="left">initial_split(); training(); testing()</td>
+<td align="left">initial_split; training, testing</td>
+</tr>
+<tr class="odd">
+<td align="left">feature engineer</td>
+<td align="left">recipe %&gt;% step_*()</td>
+<td align="left">recipe %&gt;% step_*()</td>
+</tr>
+<tr class="even">
+<td align="left">resample</td>
+<td align="left">trainControl()</td>
+<td align="left">vfold_cv()</td>
+</tr>
+<tr class="odd">
+<td align="left">find hyperparameters grid</td>
+<td align="left">??</td>
+<td align="left">args(<model_function>)</td>
+</tr>
+<tr class="even">
+<td align="left">fit model</td>
+<td align="left">fit &lt;- train()</td>
+<td align="left">specify model: model &lt;- <model_function> %&gt;% set_engine() %&gt;% set_mode(); tune() in <model_function></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">specify workflow: wf &lt;- workflow() %&gt;% add_model() %&gt;% add_recipe()</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">fit train data: fit &lt;- wf %&gt;% fit_resamples(resamples, control); wf %&gt;% grid_tune(resamples, control, grid)</td>
+</tr>
+<tr class="odd">
+<td align="left">collect metrics</td>
+<td align="left">fit$results</td>
+<td align="left">fit %&gt;% collect_metrics()</td>
+</tr>
+<tr class="even">
+<td align="left">predict value for train data</td>
+<td align="left">fit$pred</td>
+<td align="left">fit %&gt;% collect_predictions()</td>
+</tr>
+<tr class="odd">
+<td align="left">predict value for test data</td>
+<td align="left">predict(fit, newdata, type=“prob”)</td>
+<td align="left">best_hyp &lt;- fit %&gt;% select_best(metric); wf &lt;- wf %&gt;% finalize_workflow(best_hyp);</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">roc_auc()</td>
+<td align="left">last_fit &lt;- wf %&gt;% last_fit(); last_fit %&gt;% collect_predictions(); last_fit %&gt;% collect_metrics()</td>
+</tr>
+<tr class="odd">
+<td align="left">importance of variable</td>
+<td align="left">varImp()</td>
+<td align="left">pull_workflow_fit(last_fit$.workflow[[1]]); vip()</td>
+</tr>
+</tbody>
+</table>
+</div>
