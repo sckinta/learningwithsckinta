@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>basic on LEARNING WITH SCKINTA</title>
+    <link>/tags/basic/</link>
+    <description>Recent content in basic on LEARNING WITH SCKINTA</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 25 Jun 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/basic/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Transition from dplyr to data.table</title>
+      <link>/post/2020-06-25_data_table/</link>
+      <pubDate>Thu, 25 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-06-25_data_table/</guid>
+      <description>dplyr and tidyr has totally changed the way we code in R. I particularly love the pipe %&amp;gt;% which comes from magrittr package, and makes the code easy to read and understand. While I am obessed with simplicity of dplyr coding style, I am also fasinated with how fast data.table wrangles the data. Below is an example showing the speed difference using dplyr and data.table in a user function gene_lookup for one of my shiny app.</description>
+    </item>
+    
+  </channel>
+</rss>

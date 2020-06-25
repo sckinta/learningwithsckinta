@@ -6,10 +6,19 @@
     <description>Recent content in dataWrangle on LEARNING WITH SCKINTA</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 22 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 25 Jun 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/datawrangle/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Transition from dplyr to data.table</title>
+      <link>/post/2020-06-25_data_table/</link>
+      <pubDate>Thu, 25 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-06-25_data_table/</guid>
+      <description>dplyr and tidyr have totally changed the way we code in R. I particularly love the pipe %&amp;gt;% which comes from magrittr package and makes the code easy to read and understand. While I am obessed with simplicity of dplyr coding style, I am also fascinated with how fast data.table wrangles data. Below is an example showing the speed difference using dplyr and data.table in a user function gene_lookup for one of my shiny app.</description>
+    </item>
     
     <item>
       <title>From R to Python: Data Wrangling (part1)</title>
