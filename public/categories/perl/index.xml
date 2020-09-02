@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>perl on LEARNING WITH SCKINTA</title>
+    <link>/categories/perl/</link>
+    <description>Recent content in perl on LEARNING WITH SCKINTA</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 22 Aug 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/categories/perl/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Taking options from command line</title>
+      <link>/post/2020-8-22_options/</link>
+      <pubDate>Sat, 22 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-8-22_options/</guid>
+      <description>Taking in options from command line is an essential step towards generalized usage of scripts. However, it is a chapter I skipped in almost all language textbooks since my primary goal was to code for a specific problem and did not mind re-writing the scripts in different situations.
+Usually the options following the scripts have two types
+ direct inputs (with default definition within the script). the “true”&amp;quot; options with “-” or “–” to allow optional manipulation  For the second type of options, it becomes a little bit complicated.</description>
+    </item>
+    
+  </channel>
+</rss>

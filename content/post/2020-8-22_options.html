@@ -1,0 +1,303 @@
+---
+title: 'Taking options from command line'
+author: "Sckinta"
+date: "2020-08-22"
+categories: ["r", "shell", "perl"]
+tags: ["Scripting"]
+output: 
+  blogdown::html_page:
+          toc: false
+---
+
+
+
+<p>Taking in options from command line is an essential step towards generalized usage of scripts. However, it is a chapter I skipped in almost all language textbooks since my primary goal was to code for a specific problem and did not mind re-writing the scripts in different situations.</p>
+<p>Usually the options following the scripts have two types</p>
+<ul>
+<li>direct inputs (with default definition within the script).</li>
+<li>the “true”&quot; options with “-” or “–” to allow optional manipulation</li>
+</ul>
+<p>For the second type of options, it becomes a little bit complicated. First, this type options can be further grouped based whether there is argument value followed specified option (“options with argument” vs “options without argument”). In addition, it can also be classified by whether this option is mandatory or optional (although all mandatory options can be converted to optional by specifying the default value).</p>
+<p>In this post, I will catch up on the options taken-in scripting in <a href="#Shell">Shell</a>, <a href="#R">R</a> and <a href="#Perl">Perl</a>.</p>
+<div id="Shell" class="section level3">
+<h3>Shell</h3>
+<p>Shell script takes in first type of options using special variables based on the input orders <code>$1</code>, <code>$2</code>, … For the unknown number of inputs, <code>$@</code> array is used to represents all arguments after script file (<code>$0</code>).</p>
+<p>For the second type of options, there are two methods to take in options. One method is to use <code>while :; do; done</code> to read through all arguments (<code>$@</code>) after scripts by considering <code>--option</code> as an argument itself and <code>shift</code> it off in the loop. For each <code>--option</code>, we can use <a href="https://www.tutorialspoint.com/unix/case-esac-statement.htm"><code>case; esac</code></a> matching to specify what exact value should be.</p>
+<p>In the following script, I listed the examples of “mandatory non-empty option argument”, “optional empty option argument” and “optional non-empty option argument”.</p>
+<pre class="shell"><code>#!/bin/bash
+
+## specifiy usage function
+usage()
+{
+        echo &quot;Usage: bash $0 [-h] -p p1 [-v] [-o output_file] bam1 bam2&quot; 1&gt;&amp;2
+}
+
+## setting defaults
+verbose=0 # default for optional empty option argument
+# p1=0 # all mandatory options can be converted to optional by specifying the default value
+
+while :; do
+    case $1 in
+        -p | --para ) # mandatory non-empty option argument (mandatory enforced later, or we can set default to make it optional)
+                if [[ &quot;$2&quot; &amp;&amp; ! $2 =~ &quot;-&quot; ]]; then
+                        p1=$2
+                        shift
+                else
+                        echo &#39;ERROR: --para requires non-empty option argument&#39;
+                        exit
+                fi
+        ;;
+        -v | --verbose ) # optional empty option argument (with default)
+                verbose=$((verbose + 1))
+        ;;
+        -o | --output ) # optional non-empty option argument
+                if [[ -f $2 ]]; then # prevent overwrite into a file exist in directory
+                        printf &#39;WARNING: --output argument %s is a file existing in directory\n&#39; &quot;$2&quot; &gt;&amp;2
+                        echo &quot;Are you sure about overwriting?&quot;
+                        echo &quot;Press any key to continue&quot;
+                        while [ true ] ; do
+                                read -n 1
+                                if [ $? = 0 ] ; then
+                                        break 1 # break the while [ true ] loop
+                                fi
+                        done
+                fi
+                output=$2
+                shift
+        ;;
+        -h | --help )           
+                usage
+                exit
+        ;;
+        -?*)
+                printf &#39;WARN: Unknown option (ignored): %s\n&#39; &quot;$1&quot; &gt;&amp;2
+                exit
+        ;;
+        *) # Default case: No more options, so break out of the loop.
+                break
+    esac
+    shift
+done
+
+# mandatory argument
+if [[ -z $p1 ]]; then
+        echo &#39;ERROR: --para is mandatory argument&#39;
+        exit
+fi
+
+# input after options are put into $@
+bams=$@
+
+# a simple function to execute 
+print_out()
+{
+        for bam in ${bams[@]}; do
+                echo &quot;$bam&quot;
+        done
+}
+
+# show what --para take in
+echo &quot;$p1&quot;
+
+# execute function output
+if [[ ! -z $output ]]; then
+        print_out &gt; $output
+else
+        print_out
+fi</code></pre>
+<p>The second method is to use <code>getopts</code> function with function-specific variables <code>$OPTARG</code> and <code>$OPTIND</code> to track the option value and option number. It can only take in the short format “-” options. The <code>:</code> following the <code>-o</code> will be passed to $OPTARG, thus, the different between “options with argument” and “options without argument” are shown in <code>o:</code> and <code>o</code> in <code>getopts</code> format.</p>
+<pre class="shell"><code>while getopts &quot;:ho:&quot; opt; do
+        case ${opt} in
+                h )
+                        echo &quot;usage: bash $0 -o output_file folder1 folder2 ...&quot;
+                        exit
+                ;;
+                o )
+                        output=$OPTARG
+                ;;
+                \? )
+                        echo &quot;Invalid option: $OPTARG&quot; 1&gt;&amp;2
+                        exit
+                ;;
+                : )
+                        echo &quot;Invalid option: $OPTARG requires an argument&quot; 1&gt;&amp;2
+                        exit
+                ;;
+        esac
+done
+shift $((OPTIND -1))
+dirs=$@</code></pre>
+<p>Personally, I would recommend the first method. The additional reading can be found <a href="http://mywiki.wooledge.org/BashFAQ/035" class="uri">http://mywiki.wooledge.org/BashFAQ/035</a></p>
+</div>
+<div id="R" class="section level3">
+<h3>R</h3>
+<p>Most R users execute the R script in Rstudio or R Console, and may never need to take in options. However, to execute R script in HPC environment, we submit <code>Rscript script.R</code> to the cluster for the jobs requiring high resources from command line.</p>
+<p>For first type of options, <code>commandArgs</code> is all you need. It parses all arguments after script.R to the arguments vector.</p>
+<pre class="r"><code>args = commandArgs(trailingOnly=TRUE)
+file1=args[1]
+file2=args[2]</code></pre>
+<p>For the second type of options, package <code>optparse</code> is useful. Function <code>make_option</code> is used to specify each option type (matching pattern, option type, default value, …). To distinguish “options with argument” and “options without argument”, we can specify <code>action</code> argument in <code>make_option</code> function.</p>
+<ul>
+<li>options with argument: <code>action=&quot;store&quot;, type=&quot;character&quot;</code> (# this is default)</li>
+<li>options without argument: <code>action=&quot;store_true&quot;</code> (# by default, <code>type=&quot;logical&quot;</code>)</li>
+</ul>
+<p>After making option list, we use <code>parse_args(OptionParser(option_list))</code> to assign options to a list value (with long flag option as list element name).</p>
+<pre class="r"><code>library(optparse)
+
+option_list = list(
+  # parameter 1 
+  make_option(
+    c(&quot;-p&quot;,&quot;--para&quot;),
+    type=&quot;integer&quot;, 
+    default=1, 
+    help=&quot;parameter 1 [default= %default]&quot;
+    ),
+  # optional output
+    make_option(
+      c(&quot;-o&quot;, &quot;--out&quot;), 
+      type=&quot;character&quot;, 
+      default=stdout(), 
+    help=&quot;output file name [default= STDOUT]&quot;, 
+      metavar=&quot;character&quot;
+     ),
+  # verbose
+  make_option(
+      c(&quot;-v&quot;, &quot;--verbose&quot;), 
+      action=&quot;store_true&quot;,
+      default=F
+     )
+)
+ 
+opts = parse_args(OptionParser(option_list=option_list))
+opts</code></pre>
+<p>Things need to be cautious</p>
+<ul>
+<li>final list, by default, have help function, thus no need to specify <code>-h</code>. To visualize the help page</li>
+</ul>
+<pre class="r"><code>parse_args(OptionParser(option_list=option_list), args = c(&quot;--help&quot;))</code></pre>
+<ul>
+<li>long flag option is required.</li>
+<li><code>default</code> argument in function <code>make_option</code> must not be NULL, otherwise, the option will not be included in the final list.</li>
+<li>There are other useful arguments including <code>dest</code>, <code>callback</code> and <code>metavar</code>. Learn more from</li>
+</ul>
+<p>Besides package <code>optparse</code>, <code>argparser</code> is another popular package. Please read <a href="https://blog.sellorm.com/2017/12/30/command-line-utilities-in-r-pt-6/">this blog</a> for tutorial.</p>
+</div>
+<div id="Perl" class="section level3">
+<h3>Perl</h3>
+<p>Perl script takes every argument (after script) from command line into a special array <code>@ARGV</code>. We can easily read first type of options by parsing through <code>@ARGV</code>. This is very similar to <code>commandArgs</code> in R.</p>
+<pre class="perl"><code>#!/usr/bin/perl
+my $usage=&quot;$0 file1 [file2 file3...]
+This script is to print out first column of each file
+It requires at least one input file 
+&quot;;
+
+if (scalar @ARGV &lt; 1){
+  die $usage; # ensure there are arguments following the script
+}else{
+  for (my $i=0; $i &lt; scalar @ARGV; $i++){ # go through each input file
+    open IN, &quot;&lt;$ARGV[$i]&quot;;
+    while (&lt;IN&gt;){
+      chomp;
+      my @items=split(/\t/,$_);
+      print &quot;$items[0]\n&quot;;
+    }
+    close IN;
+  }
+}</code></pre>
+<p>In above script, another special variable <code>$0</code> was used. It represents the script name itself (for example we can save above script as “print_col1.pl”). Thus, when the script is not followed by an input file, it will print usage</p>
+<blockquote>
+<p>print_col1.pl file1 [file2 file3…]<br />
+This script is to print out first column of each file It requires at least one input file</p>
+</blockquote>
+<p>For the second type of options, perl uses a module <code>Getopt</code> to parse options. The following script shows an example to print sequence length based on file format (<a href="https://compgenomr.github.io/book/fasta-and-fastq-formats.html">fasta vs fastq</a>).</p>
+<pre class="perl"><code>#!/usr/bin/perl
+use Getopt::Long;
+
+my $usage=&quot;$0 [--format fasta] [--seqN] [--header] file [file2 file3 ...]
+this script is to calculate sequence file from fastq/fasta file
+--format fasta|fastq # default is fasta
+--seqN integer # default is everything
+--header # default no header added
+output directly to STDOUT as seq_name[tab]length
+&quot;;
+
+my $format=&quot;fasta&quot;; # set default as fasta format.
+my $seqN=0; # set default for number of sequence to print (0 here means print all sequences)
+my $header = 0; # option variable with default value (false)
+GetOptions(
+        &quot;format=s&quot; =&gt; \$format, # the option here will read as string (s)
+        &quot;seqN=i&quot; =&gt; \$seqN, # the option here will read as numeric (i)
+        &quot;header&quot;  =&gt; \$header  # flag: if --header specified, it will become true
+);
+
+my $n;
+if ($seqN!=0){
+  $n=0;
+}
+if (scalar @ARGV &lt; 1){
+        die $usage;
+}else{
+        OUTER: for (my $i=0; $i &lt; scalar @ARGV; $i++){
+                if ($header!=0){
+                  print &quot;seq_name\tseq_len\n&quot;;
+                }
+                my $file=$ARGV[$i];
+                open IN, &quot;&lt;$file&quot;;
+                if ($format eq &quot;fasta&quot;){
+                        my $header;
+                        my $seq;
+                        while (&lt;IN&gt;){
+                                chomp;
+                                if(/^&gt;/){
+                                        if($header){
+                                                my $len=length($seq);
+                                                print &quot;$header\t$len\n&quot;;
+                                                $n++;
+                                                if ($seqN!=0 &amp;&amp; $n==$seqN){
+                                                  last OUTER;
+                                                }
+                                        }
+                                        s/^&gt;//;
+                                        my @header=split(/\s+/, $_);
+                                        $header=$header[0];
+                                        $seq=&quot;&quot;;
+                                }else{
+                                        $seq=$seq.$_;
+                                }
+                        }
+                        my $len=length($seq);
+                        print &quot;$header\t$len\n&quot;;
+                }
+                elsif($format eq &quot;fastq&quot;){
+                        my $header;
+                        my $seq;
+                        my $line;
+                        while (&lt;IN&gt;){
+                                chomp;
+                                if ($line % 4==0){
+                                        if($header){
+                                                my $len=length($seq);
+                                                print &quot;$header\t$len\n&quot;;
+                                                $n++;
+                                                if ($seqN!=0 &amp;&amp; $n==$seqN){
+                                                  last OUTER;
+                                                }
+                                        }
+                                        s/^@//;
+                                        my @header=split(/\s+/, $_);
+                                        $header=$header[0];
+                                        
+                                }elsif($line % 4==1){
+                                        $seq=$_;
+                                }
+                                $line++;
+                        }
+                        my $len=length($seq);
+                        print &quot;$header\t$len\n&quot;;
+                }
+                close IN;
+        }
+}
+</code></pre>
+<p>For more usage example of <code>Getopt</code>, please refer to its <a href="https://perldoc.perl.org/Getopt/Long.html">perldoc</a> page.</p>
+</div>
