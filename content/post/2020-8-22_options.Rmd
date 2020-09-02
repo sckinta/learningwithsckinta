@@ -2,7 +2,7 @@
 title: 'Taking options from command line'
 author: "Sckinta"
 date: "2020-08-22"
-categories: ["r", "shell", "perl"]
+categories: ["r", "bash", "perl"]
 tags: ["Scripting"]
 output: 
   blogdown::html_page:
@@ -23,17 +23,17 @@ Usually the options following the scripts have two types
 
 For the second type of options, it becomes a little bit complicated. First, this type options can be further grouped based whether there is argument value followed specified option ("options with argument" vs "options without argument"). In addition, it can also be classified by whether this option is mandatory or optional (although all mandatory options can be converted to optional by specifying the default value). 
 
-In this post, I will catch up on the options taken-in scripting in [Shell](#Shell), [R](#R) and [Perl](#Perl).
+In this post, I will catch up on the options taken-in scripting in [Bash](#Bash), [R](#R) and [Perl](#Perl).
 
-### Shell {#Shell}
+### Bash {#Bash}
 
-Shell script takes in first type of options using special variables based on the input orders `$1`, `$2`, ... For the unknown number of inputs, `$@` array is used to represents all arguments after script file (`$0`).
+Bash script takes in first type of options using special variables based on the input orders `$1`, `$2`, ... For the unknown number of inputs, `$@` array is used to represents all arguments after script file (`$0`).
 
 For the second type of options, there are two methods to take in options. One method is to use `while :; do; done` to read through all arguments (`$@`) after scripts by considering `--option` as an argument itself and `shift` it off in the loop. For each `--option`, we can use [`case; esac`](https://www.tutorialspoint.com/unix/case-esac-statement.htm) matching to specify what exact value should be.
 
 In the following script, I listed the examples of "mandatory non-empty option argument", "optional empty option argument" and "optional non-empty option argument".
 
-```{shell eval=F}
+```{Bash eval=F}
 #!/bin/bash
 
 ## specifiy usage function
@@ -119,7 +119,7 @@ fi
 
 The second method is to use `getopts` function with function-specific variables `$OPTARG` and `$OPTIND` to track the option value and option number. It can only take in the short format "-" options. The `:` following the `-o` will be passed to $OPTARG, thus, the different between "options with argument" and "options without argument" are shown in `o:` and `o` in `getopts` format.
 
-```{shell eval=F}
+```{Bash eval=F}
 while getopts ":ho:" opt; do
         case ${opt} in
                 h )
