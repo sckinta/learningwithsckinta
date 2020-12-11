@@ -210,13 +210,13 @@ Usually the options following the scripts have two types
 <li>the “true”&quot; options with “-” or “–” to allow optional manipulation</li>
 </ul>
 <p>For the second type of options, it becomes a little bit complicated. First, this type options can be further grouped based whether there is argument value followed specified option (“options with argument” vs “options without argument”). In addition, it can also be classified by whether this option is mandatory or optional (although all mandatory options can be converted to optional by specifying the default value).</p>
-<p>In this post, I will catch up on the options taken-in scripting in <a href="#Shell">Shell</a>, <a href="#R">R</a> and <a href="#Perl">Perl</a>.</p>
-<div id="Shell" class="section level3">
-<h3>Shell</h3>
-<p>Shell script takes in first type of options using special variables based on the input orders <code>$1</code>, <code>$2</code>, … For the unknown number of inputs, <code>$@</code> array is used to represents all arguments after script file (<code>$0</code>).</p>
+<p>In this post, I will catch up on the options taken-in scripting in <a href="#Bash">Bash</a>, <a href="#R">R</a> and <a href="#Perl">Perl</a>.</p>
+<div id="Bash" class="section level3">
+<h3>Bash</h3>
+<p>Bash script takes in first type of options using special variables based on the input orders <code>$1</code>, <code>$2</code>, … For the unknown number of inputs, <code>$@</code> array is used to represents all arguments after script file (<code>$0</code>).</p>
 <p>For the second type of options, there are two methods to take in options. One method is to use <code>while :; do; done</code> to read through all arguments (<code>$@</code>) after scripts by considering <code>--option</code> as an argument itself and <code>shift</code> it off in the loop. For each <code>--option</code>, we can use <a href="https://www.tutorialspoint.com/unix/case-esac-statement.htm"><code>case; esac</code></a> matching to specify what exact value should be.</p>
 <p>In the following script, I listed the examples of “mandatory non-empty option argument”, “optional empty option argument” and “optional non-empty option argument”.</p>
-<pre class="shell"><code>#!/bin/bash
+<pre class="bash"><code>#!/bin/bash
 
 ## specifiy usage function
 usage()
@@ -298,7 +298,7 @@ else
         print_out
 fi</code></pre>
 <p>The second method is to use <code>getopts</code> function with function-specific variables <code>$OPTARG</code> and <code>$OPTIND</code> to track the option value and option number. It can only take in the short format “-” options. The <code>:</code> following the <code>-o</code> will be passed to $OPTARG, thus, the different between “options with argument” and “options without argument” are shown in <code>o:</code> and <code>o</code> in <code>getopts</code> format.</p>
-<pre class="shell"><code>while getopts &quot;:ho:&quot; opt; do
+<pre class="bash"><code>while getopts &quot;:ho:&quot; opt; do
         case ${opt} in
                 h )
                         echo &quot;usage: bash $0 -o output_file folder1 folder2 ...&quot;
@@ -507,7 +507,7 @@ if (scalar @ARGV &lt; 1){
             <li><a class="article-category-link" href="/categories/r">r</a></li>
           
             
-            <li><a class="article-category-link" href="/categories/shell">shell</a></li>
+            <li><a class="article-category-link" href="/categories/bash">bash</a></li>
           
             
             <li><a class="article-category-link" href="/categories/perl">perl</a></li>
@@ -535,12 +535,37 @@ if (scalar @ARGV &lt; 1){
 </article>
 <article class="post">
   
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "https-namaster-netlify-com" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
 
 </article>
 <div class="pagination">
   
     <a href="/post/2020-06-25_data_table/" class="button big previous"><i class="fas fa-angle-left"></i> Transition from dplyr to data.table</a>
   
+  
+    <a href="/post/2020-10-22_shiny_console/" class="button big next">communicate with users in shinyapp <i class="fas fa-angle-right"></i></a>
   
 </div>
 
@@ -560,7 +585,18 @@ if (scalar @ARGV &lt; 1){
         </section>
         <header>
           <h1><a href="/post/">Post</a></h1>
-          <time class="published" datetime="">August 22, 2020</time>
+          <time class="published" datetime="">October 22, 2020</time>
+        </header>
+      </article>
+      
+      <article class="mini-post">
+        <section>
+          
+
+        </section>
+        <header>
+          <h1><a href="/post/2020-10-22_shiny_console/">communicate with users in shinyapp</a></h1>
+          <time class="published" datetime="">October 22, 2020</time>
         </header>
       </article>
       
@@ -597,17 +633,6 @@ if (scalar @ARGV &lt; 1){
         </header>
       </article>
       
-      <article class="mini-post">
-        <section>
-          
-
-        </section>
-        <header>
-          <h1><a href="/post/2020-03-30_shinyapp_tips/">External persistent data I/O using ShinyApp</a></h1>
-          <time class="published" datetime="">March 30, 2020</time>
-        </header>
-      </article>
-      
       
         <a href="/post/" class="button">See more</a>
       
@@ -627,12 +652,12 @@ if (scalar @ARGV &lt; 1){
           
           <li>
             
-              <a href="/categories/r/">r<span class="count">9</span></a>
+              <a href="/categories/r/">r<span class="count">10</span></a>
             
           
           <li>
             
-              <a href="/categories/bash/">bash<span class="count">1</span></a>
+              <a href="/categories/bash/">bash<span class="count">2</span></a>
             
           
           <li>
@@ -643,11 +668,6 @@ if (scalar @ARGV &lt; 1){
           <li>
             
               <a href="/categories/python/">python<span class="count">1</span></a>
-            
-          
-          <li>
-            
-              <a href="/categories/shell/">shell<span class="count">1</span></a>
             
           
           </li>

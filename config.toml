@@ -1,4 +1,4 @@
-baseurl                 = "https://learniningwithsckinta.netlify.com/"
+baseurl                 = "https://learniningwithsckinta.netlify.app/"
 DefaultContentLanguage  = "en"
 title                   = "LEARNING WITH SCKINTA"
 theme = "hugo-future-imperfect-slim"

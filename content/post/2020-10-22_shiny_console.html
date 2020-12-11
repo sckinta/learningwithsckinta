@@ -1,0 +1,33 @@
+---
+title: 'communicate with users in shinyapp'
+author: "Sckinta"
+date: "2020-10-22"
+categories: ["r"]
+tags: ["shiny"]
+output: 
+  blogdown::html_page:
+          toc: false
+runtime: shiny
+---
+
+
+
+<p>Shiny enables R programmers to write web applications without knowning javascript. It creates a nice web-based user interface to allow non-programmers to perform complicated calculation running on the backend. To enhance user experience, we usually find a need to communicate with users, eg, inform user input is invalid, follow the progress, present the steps of backend computation, etc.</p>
+<p>This post will show a few ways I usually use in our shinyapps and discuss the cases I would choose one over another.</p>
+<div id="section-validate-and-need" class="section level1">
+<h1>validate and need</h1>
+<p>The shinyapp usually reports errors with <span style="color: red;">red font</span> on <code>renderPlot</code> or <code>renderDataTable</code> layouts. However, the deployed shinyapp usually ends up with unambigous message that are not informative enough for users to change their next move. This is when <code>validate(need())</code> comes to use. It commonly used to validate input values and conditions based input values. It prevents shinyapp from crashing or reporting errors when the input values could not finish the calculation in server. It reports “message” written by the developer in <span style="color: grey;">grey font</span>.</p>
+</div>
+<div id="section-show-notification" class="section level1">
+<h1>show notification</h1>
+<p>Notification can be another to send user message. However, different from <code>validate</code> presenting message in plot or table layouts, <code>showNotification</code> show the message in a dialog window. Based on the message type – “default”, “message”, “warning”, “error” – it will show different aesthetic for the window, eg, “error” meesage will be red window. There is another function called <code>removeNotification</code>, wihch usually pairs with <code>showNotification</code> in usage.</p>
+<p>Besides default notifications, there are <a href="https://github.com/dreamRs/shinypop">community R packages</a> with nicer aesthetics.</p>
+</div>
+<div id="section-progress-bar" class="section level1">
+<h1>progress bar</h1>
+<p>Progress bar is a useful tool when your shinyapp will takes a relative long computation time. Like <code>showNotification</code>, progress bar can pop up like dialog. One commonly progress bar usage is when users upload file.</p>
+</div>
+<div id="section-console-message" class="section level1">
+<h1>console message</h1>
+<p>The last one, “inserting console” in the webapp, is not commonly used, since most shinyapp is developed for non-programmer users who are not interested or do not understand the backend computation. However, console can serve as progress report as well as notifying users warning or errors. Combining with <code>message</code>, it can also send users informative messages to indicate steps of backend calculation.</p>
+</div>

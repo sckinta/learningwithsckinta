@@ -1,5 +1,5 @@
 ---
-contactanswertime: 72
+contactanswertime: 24
 contactemail: Your Email
 contactlang: en
 contactmessage: Your Message

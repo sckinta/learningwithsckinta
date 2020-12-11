@@ -2,7 +2,7 @@
 title: 'Taking options from command line'
 author: "Sckinta"
 date: "2020-08-22"
-categories: ["r", "shell", "perl"]
+categories: ["r", "bash", "perl"]
 tags: ["Scripting"]
 output: 
   blogdown::html_page:
@@ -18,13 +18,13 @@ output:
 <li>the “true”&quot; options with “-” or “–” to allow optional manipulation</li>
 </ul>
 <p>For the second type of options, it becomes a little bit complicated. First, this type options can be further grouped based whether there is argument value followed specified option (“options with argument” vs “options without argument”). In addition, it can also be classified by whether this option is mandatory or optional (although all mandatory options can be converted to optional by specifying the default value).</p>
-<p>In this post, I will catch up on the options taken-in scripting in <a href="#Shell">Shell</a>, <a href="#R">R</a> and <a href="#Perl">Perl</a>.</p>
-<div id="Shell" class="section level3">
-<h3>Shell</h3>
-<p>Shell script takes in first type of options using special variables based on the input orders <code>$1</code>, <code>$2</code>, … For the unknown number of inputs, <code>$@</code> array is used to represents all arguments after script file (<code>$0</code>).</p>
+<p>In this post, I will catch up on the options taken-in scripting in <a href="#Bash">Bash</a>, <a href="#R">R</a> and <a href="#Perl">Perl</a>.</p>
+<div id="Bash" class="section level3">
+<h3>Bash</h3>
+<p>Bash script takes in first type of options using special variables based on the input orders <code>$1</code>, <code>$2</code>, … For the unknown number of inputs, <code>$@</code> array is used to represents all arguments after script file (<code>$0</code>).</p>
 <p>For the second type of options, there are two methods to take in options. One method is to use <code>while :; do; done</code> to read through all arguments (<code>$@</code>) after scripts by considering <code>--option</code> as an argument itself and <code>shift</code> it off in the loop. For each <code>--option</code>, we can use <a href="https://www.tutorialspoint.com/unix/case-esac-statement.htm"><code>case; esac</code></a> matching to specify what exact value should be.</p>
 <p>In the following script, I listed the examples of “mandatory non-empty option argument”, “optional empty option argument” and “optional non-empty option argument”.</p>
-<pre class="shell"><code>#!/bin/bash
+<pre class="bash"><code>#!/bin/bash
 
 ## specifiy usage function
 usage()
@@ -106,7 +106,7 @@ else
         print_out
 fi</code></pre>
 <p>The second method is to use <code>getopts</code> function with function-specific variables <code>$OPTARG</code> and <code>$OPTIND</code> to track the option value and option number. It can only take in the short format “-” options. The <code>:</code> following the <code>-o</code> will be passed to $OPTARG, thus, the different between “options with argument” and “options without argument” are shown in <code>o:</code> and <code>o</code> in <code>getopts</code> format.</p>
-<pre class="shell"><code>while getopts &quot;:ho:&quot; opt; do
+<pre class="bash"><code>while getopts &quot;:ho:&quot; opt; do
         case ${opt} in
                 h )
                         echo &quot;usage: bash $0 -o output_file folder1 folder2 ...&quot;

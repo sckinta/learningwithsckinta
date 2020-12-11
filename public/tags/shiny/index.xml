@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>shiny on LEARNING WITH SCKINTA</title>
+    <link>/tags/shiny/</link>
+    <description>Recent content in shiny on LEARNING WITH SCKINTA</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 22 Oct 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/shiny/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>communicate with users in shinyapp</title>
+      <link>/post/2020-10-22_shiny_console/</link>
+      <pubDate>Thu, 22 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020-10-22_shiny_console/</guid>
+      <description>Shiny enables R programmers to write web applications without knowning javascript. It creates a nice web-based user interface to allow non-programmers to perform complicated calculation running on the backend. To enhance user experience, we usually find a need to communicate with users, eg, inform user input is invalid, follow the progress, present the steps of backend computation, etc.
+This post will show a few ways I usually use in our shinyapps and discuss the cases I would choose one over another.</description>
+    </item>
+    
+  </channel>
+</rss>
