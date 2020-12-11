@@ -1,5 +1,5 @@
 ---
-title: 'Troubleshoot R package install'
+title: 'Troubleshoot R package installation'
 author: "Chun Su"
 date: "2020-12-10"
 categories: ["r"]
@@ -10,7 +10,7 @@ output:
 ---
 
 ## understand 3 import R install associated system files
-
+There are three important system files for R package installation
 - `~/.Renviron`
   - set downloading key as environment variable
   
@@ -22,27 +22,34 @@ output:
   ```
 - `~/.R/Makevars`
   - set FLAGS, which usually relate to some installation error like (:cannot find lib `.so`)
+  
   ```R
   LDFLAGS=-L/cm/shared/apps_chop/gsl/2.5/lib -lgsl -lgslcblas
   CFLAGS=-I/cm/shared/apps_chop/gsl/2.5/include
   ```
   - set PKG_LIBS
+  
   ```R
   PKG_LIBS=-L/cm/shared/apps_chop/gsl/2.5/lib
   PKG_LIBS =$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
   ```
   - set others
+  
   ```R
   SOURCES = $(wildcard *.cpp) $(wildcard **/*.cpp)
   OBJECTS = $(SOURCES:.cpp=.o)
   ```
+  
 - `~/.Rprofile`
   - used to set options.
+  
   ```R
   options(blogdown.hugo.version = "0.77.0")
   options(blogdown.initial_files.number = 0)
   ```
+  
   - used to set repo (very useful for deploying shiny app)
+  
   ```R
   local({
   r <- getOption("repos")
@@ -55,6 +62,7 @@ output:
 
 ## install R package from source file
 It works for package does not require too many dependency
+
 ```R
 install.packages(path_to_file, repos = NULL, type="source")
 ```
@@ -73,6 +81,7 @@ packageVersion("BiocManager")
 BiocManager::version()
 ```
 OR
+
 ```R
 library(BiocManager)
 # Bioconductor version 3.9 (BiocManager 1.30.10), ?BiocManager::install for help
