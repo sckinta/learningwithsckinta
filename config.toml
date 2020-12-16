@@ -232,3 +232,8 @@ math = true
   # mastodon              = "example.com/@example"
   # Email
   email                 = "sckinta@gmail.com"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

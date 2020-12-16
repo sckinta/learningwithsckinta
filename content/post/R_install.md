@@ -9,8 +9,10 @@ output:
           toc: false
 ---
 
-## understand 3 import R install associated system files
-There are three important system files for R package installation
+Everyone may encounter some issues while installing R packages. Over years of troubleshooting in R package installation, I summarize some methods as my "go-to" list to check , in addition to search solutions on forum.
+
+## 3 system files associated with R installation
+First of all, there are three important system files for R package installation
 
 - `~/.Renviron`
   - set downloading key as environment variable
@@ -62,6 +64,7 @@ There are three important system files for R package installation
   ```
 
 ## install R package from source file
+
 It works for package does not require too many dependency
 
 ```R
@@ -69,6 +72,7 @@ install.packages(path_to_file, repos = NULL, type="source")
 ```
 
 ## Bioconductor
+%>% 
 Bioconductor archive R packages in their specific release. You cannot install packages from release "A" under the BioManager of release "B" using default `BiocManager::install()`. 
 
 The Bioconducter release can be found https://www.bioconductor.org/about/release-announcements/
