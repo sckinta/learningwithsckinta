@@ -270,25 +270,6 @@ chocolate_df <- chocolate_clean %>%
     na.omit()
 ```
 
-### recipe
-
-```{r}
-chocolate_rec <- 
-    recipe(rating_bl ~ ., data = chocolate_df) %>% 
-    step_other(company_manufacturer, threshold=0.01, other="otherCompany") %>% 
-    # step_mutate_at(c("company_manufacturer","country_of_bean_origin_blend", "rating_bl"), fn = ~as.factor(.x)) %>% 
-    step_dummy(all_nominal_predictors()) %>% 
-    step_zv(all_predictors())
-
-chocolate_rec
-```
-
-check preprocessed data.frame
-```{r}
-chocolate_rec %>% 
-    prep(new_data = NULL) %>% 
-    juice()
-```
 
 ### split samples
 
@@ -307,6 +288,26 @@ chocolate_testing <- testing(chocolate_split)
 set.seed(123)
 folds <- vfold_cv(chocolate_train, v = 10)
 folds
+```
+
+### recipe
+
+```{r}
+chocolate_rec <- 
+    recipe(rating_bl ~ ., data = chocolate_train) %>% 
+    step_other(company_manufacturer, threshold=0.01, other="otherCompany") %>% 
+    # step_mutate_at(c("company_manufacturer","country_of_bean_origin_blend", "rating_bl"), fn = ~as.factor(.x)) %>% 
+    step_dummy(all_nominal_predictors()) %>% 
+    step_zv(all_predictors())
+
+chocolate_rec
+```
+
+check preprocessed data.frame
+```{r}
+chocolate_rec %>% 
+    prep(new_data = NULL) %>% 
+    juice()
 ```
 
 ### grid tune xgboost
