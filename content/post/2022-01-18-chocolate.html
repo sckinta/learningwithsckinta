@@ -1,0 +1,645 @@
+---
+title: "xgboost to predict chocolate rating using tidymodels"
+author: "Chun Su"
+date: "2022-01-23"
+categories: ["r"]
+tags: ["tidyTuesday", 'tidymodels']
+output: 
+  blogdown::html_page:
+          toc: true
+params:
+  data_date: '2022-01-18'
+---
+
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#clean-data">Clean Data</a></li>
+<li><a href="#explore-data">Explore Data</a></li>
+<li><a href="#ml">ML</a><ul>
+<li><a href="#recipe">recipe</a></li>
+<li><a href="#split-samples">split samples</a></li>
+<li><a href="#grid-tune-xgboost">grid tune xgboost</a></li>
+<li><a href="#last_fit-model"><code>last_fit</code> model</a></li>
+<li><a href="#feature-importance">feature importance</a></li>
+</ul></li>
+<li><a href="#final-notes">Final notes</a></li>
+</ul>
+</div>
+
+<p>Load required libraries</p>
+<pre class="r"><code>library(tidyverse)
+library(tidymodels)
+# library(lubridate)
+library(vip)</code></pre>
+<p>Data README is available at <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2022/2022-01-18/readme.md">here</a>.</p>
+<div id="clean-data" class="section level2">
+<h2>Clean Data</h2>
+<pre class="r"><code>chocolate_raw &lt;- tuesdata$chocolate
+chocolate_raw &lt;- chocolate_raw %&gt;% 
+    mutate(cocoa_percent = parse_number(cocoa_percent)) %&gt;% 
+    separate(ingredients, c(&quot;ingredient_num&quot;,&quot;ingredients&quot;), sep=&quot;-&quot;) %&gt;% 
+    mutate(
+        ingredient_num=parse_number(ingredient_num),
+        ingredients=str_trim(ingredients)
+    ) %&gt;% 
+    mutate(ingredients = map(ingredients, ~str_split(.x, &quot;,&quot;)[[1]])) %&gt;% 
+    mutate(most_memorable_characteristics=map(most_memorable_characteristics, ~str_split(.x,&quot;,&quot;)[[1]])) %&gt;% 
+    mutate(most_memorable_characteristics=map(most_memorable_characteristics, ~str_trim(.x))) %&gt;% 
+    # select(cocoa_percent, ingredient_num, ingredients, most_memorable_characteristics) %&gt;%
+    I()</code></pre>
+<ul>
+<li>Convert gredients to boolean columns</li>
+</ul>
+<p>using <code>unnest</code> to spread out the list column <code>ingredients</code>.</p>
+<pre class="r"><code>gredients &lt;- chocolate_raw %&gt;% 
+    mutate(line_n = row_number()) %&gt;% 
+    select(line_n, ingredients) %&gt;% 
+    unnest(cols=c(ingredients)) %&gt;% 
+    mutate(tmp=1) %&gt;% 
+    pivot_wider(names_from=ingredients, values_from=tmp) %&gt;% 
+    select(-&quot;NA&quot;) %&gt;% 
+    janitor::clean_names() %&gt;% 
+    mutate_at(vars(-line_n), ~ifelse(is.na(.x),0,.x)) %&gt;% 
+    I()</code></pre>
+<ul>
+<li>Convert most_memorable_characteristics to boolean columns</li>
+</ul>
+<pre class="r"><code>most_memorable_characteristics &lt;- chocolate_raw %&gt;% 
+    mutate(line_n = row_number()) %&gt;% 
+    select(line_n, most_memorable_characteristics) %&gt;% 
+    unnest(cols=c(most_memorable_characteristics)) %&gt;% 
+    mutate(tmp=1) %&gt;% 
+    # distinct(most_memorable_characteristics) %&gt;% 
+    # pivot_wider(names_from=most_memorable_characteristics, values_from=tmp) %&gt;% 
+    I()</code></pre>
+<p>There are 972 most_memorable_characteristics in total</p>
+<pre class="r"><code>most_memorable_characteristics %&gt;% 
+    # mutate(most_memorable_characteristics = fct_lump_min(most_memorable_characteristics, min=100)) %&gt;% 
+    group_by(most_memorable_characteristics) %&gt;% 
+    count(sort=T) %&gt;% 
+    head(20) %&gt;% 
+    ggplot(aes(x=n, y=reorder(most_memorable_characteristics,n))) +
+    geom_col() +
+    geom_text(aes(label=n), color=&quot;white&quot;, hjust=1) +
+    theme_bw() +
+    labs(x=&quot;# of chocolates&quot;, y=&quot;most memorable characteristics&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Pick top 12 most_memorable_characteristics to convert to boolean column</p>
+<pre class="r"><code>most_memorable_characteristics &lt;- most_memorable_characteristics %&gt;% 
+    mutate(most_memorable_characteristics = fct_lump_min(most_memorable_characteristics, min=100)) %&gt;% 
+    distinct() %&gt;% 
+    pivot_wider(names_from=most_memorable_characteristics, values_from=tmp) %&gt;% 
+    mutate_at(vars(-line_n), ~ifelse(is.na(.x),0,.x))</code></pre>
+<ul>
+<li>create chocolate_clean data</li>
+</ul>
+<pre class="r"><code>chocolate_clean &lt;-
+    chocolate_raw %&gt;% 
+    mutate(line_n=row_number()) %&gt;% 
+    select(-ingredients, -most_memorable_characteristics) %&gt;% 
+    left_join(gredients) %&gt;%
+    left_join(most_memorable_characteristics) %&gt;%
+    I()</code></pre>
+</div>
+<div id="explore-data" class="section level2">
+<h2>Explore Data</h2>
+<p>Several features are explored in terms of their association with rating.</p>
+<ul>
+<li><code>country_of_bean_origin</code></li>
+</ul>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    mutate(country_of_bean_origin = fct_lump(country_of_bean_origin, n=10)) %&gt;% 
+    ggplot(aes(x=rating, y=country_of_bean_origin)) +
+    geom_boxplot(aes(fill=country_of_bean_origin)) +
+    theme_bw()</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Blend and non-blend on <code>country_of_bean_origin</code> shows big difference, thus we convert <code>country_of_bean_origin</code> to <code>country_of_bean_origin_blend</code></p>
+<pre class="r"><code>chocolate_clean &lt;- chocolate_clean %&gt;% 
+    mutate(country_of_bean_origin_blend = ifelse(country_of_bean_origin==&quot;Blend&quot;, country_of_bean_origin, &quot;Non-blend&quot;))</code></pre>
+<ul>
+<li><code>company_manufacturer</code> and <code>company_location</code></li>
+</ul>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    mutate(company_manufacturer = fct_lump(company_manufacturer, prop=0.01)) %&gt;% 
+    ggplot(aes(x=rating, y=reorder(company_manufacturer, rating, median))) +
+    geom_boxplot(aes(fill=company_manufacturer)) +
+    theme_bw() +
+    labs(y=&quot;company_manufacturer&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    mutate(company_location = fct_lump(company_location, n=5)) %&gt;% 
+    ggplot(aes(x=rating, y=reorder(company_location, rating))) +
+    geom_boxplot(aes(fill=company_location)) +
+    theme_bw() +
+    labs(y=&quot;company_location&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<ul>
+<li><code>cocoa_percent</code></li>
+</ul>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    ggplot(aes(x=cocoa_percent, y=rating)) +
+    geom_point(aes(color=as.factor(cocoa))) +
+    theme_bw() +
+    theme(legend.position = &quot;bottom&quot;) +
+    labs(color=&quot;cocoa as most_memorable_characteristics&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><code>rating</code> is not as continuous as what i originally imagined. Thus, I convert <code>rating</code> to nominal variable <code>rating_bl</code> using 3 as threshold</p>
+<pre class="r"><code>chocolate_clean &lt;- chocolate_clean %&gt;% 
+    mutate(rating_bl = ifelse(rating &gt;= 3, &quot;&gt;=3&quot;, &quot;&lt; 3&quot;))
+
+chocolate_clean %&gt;% 
+    group_by(rating_bl) %&gt;% 
+    count()</code></pre>
+<pre><code>## # A tibble: 2 × 2
+## # Groups:   rating_bl [2]
+##   rating_bl     n
+##   &lt;chr&gt;     &lt;int&gt;
+## 1 &lt; 3         566
+## 2 &gt;=3        1964</code></pre>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    ggplot(aes(x=cocoa_percent, y=rating_bl)) +
+    geom_boxplot(aes(fill=as.factor(cocoa))) +
+    theme_bw() +
+    labs(y=&quot;rating&quot;, fill=&quot;cocoa as most_memorable_characteristics&quot;) +
+    theme(legend.position = &quot;bottom&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<ul>
+<li>most_memorable_characteristics</li>
+</ul>
+<pre class="r"><code>chocolate_clean &lt;- chocolate_clean %&gt;% 
+    mutate_at(vars(Other:creamy), as.factor)</code></pre>
+<p>most_memorable_characteristics like <code>cocoa</code> and <code>creamy</code> positive effect rating, while <code>fatty</code>, <code>earthy</code>, <code>sandy</code>, <code>sour</code> and <code>sweet</code> negatively effect rating.</p>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    select(rating, fatty:creamy) %&gt;% 
+    pivot_longer(!rating, names_to=&quot;most_memorable_characteristics&quot;, values_to=&quot;yes&quot;) %&gt;%
+    ggplot(aes(y=reorder(most_memorable_characteristics, rating, FUN=median), x=rating)) +
+    geom_boxplot(aes(fill=yes)) +
+    theme_bw() +
+    theme(
+        legend.position = &quot;bottom&quot;
+    ) +
+    scale_fill_discrete(labels = c(&quot;0&quot;=&quot;No&quot;, &quot;1&quot;=&quot;Yes&quot;)) +
+    labs(y=&quot;most_memorable_characteristics&quot;, fill=&quot;is most_memorable_characteristics?&quot;) +
+    NULL</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<ul>
+<li>ingredients</li>
+</ul>
+<pre class="r"><code>chocolate_clean &lt;- 
+    chocolate_clean %&gt;% 
+    dplyr::rename(igrdt_beans=b, igrdt_sugar=s, igrdt_cocoa=c, igrdt_lecithin=l, igrdt_vanilla=v, igrdt_salt=sa, igrdt_sweeter=s_2) %&gt;% 
+    mutate_at(vars(contains(&quot;igrdt_&quot;)), as.factor)</code></pre>
+<p>ingredient number <code>ingredient_num</code> between 2-3 are associated with higher rating.</p>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    mutate(ingredient_num=as.factor(ingredient_num)) %&gt;% 
+    filter(!is.na(ingredient_num)) %&gt;% 
+    ggplot(aes(x = ingredient_num, y=rating)) +
+    geom_boxplot()</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>ingrediants like <code>beans</code> and <code>sugar</code> positively effect rating, while <code>vanilla</code>, <code>sweeter</code> and <code>salt</code> negatively effect rating.</p>
+<pre class="r"><code>chocolate_clean %&gt;% 
+    select(rating, contains(&quot;igrdt_&quot;)) %&gt;% 
+    pivot_longer(!rating, names_to=&quot;ingredients&quot;, values_to=&quot;yes&quot;) %&gt;%
+    mutate(ingredients = gsub(&quot;igrdt_&quot;,&quot;&quot;,ingredients)) %&gt;% 
+    ggplot(aes(y=reorder(ingredients, rating, FUN=median), x=rating)) +
+    geom_boxplot(aes(fill=yes)) +
+    theme_bw() +
+    theme(
+        legend.position = &quot;bottom&quot;
+    ) +
+    scale_fill_discrete(labels = c(&quot;0&quot;=&quot;No&quot;, &quot;1&quot;=&quot;Yes&quot;)) +
+    labs(y=&quot;ingredients&quot;, fill=&quot;contain the ingredient?&quot;) +
+    NULL</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+</div>
+<div id="ml" class="section level2">
+<h2>ML</h2>
+<p>Based on the exploratory analysis, to study the effect on overall rating of chocolates, the following features are selected for building ML models. Plus, using nominal feature <code>rating_bl</code> instead of numeric feature <code>rating</code> as outcome.</p>
+<pre class="r"><code>chocolate_df &lt;- chocolate_clean %&gt;% 
+    select(rating_bl, company_manufacturer, country_of_bean_origin_blend, cocoa_percent, ingredient_num, contains(&#39;igrdt_&#39;), cocoa, creamy, fatty, earthy, sandy, sour, sweet) %&gt;% 
+    select(-igrdt_cocoa, -igrdt_lecithin) %&gt;% 
+    na.omit()</code></pre>
+<div id="recipe" class="section level3">
+<h3>recipe</h3>
+<pre class="r"><code>chocolate_rec &lt;- 
+    recipe(rating_bl ~ ., data = chocolate_df) %&gt;% 
+    step_other(company_manufacturer, threshold=0.01, other=&quot;otherCompany&quot;) %&gt;% 
+    # step_mutate_at(c(&quot;company_manufacturer&quot;,&quot;country_of_bean_origin_blend&quot;, &quot;rating_bl&quot;), fn = ~as.factor(.x)) %&gt;% 
+    step_dummy(all_nominal_predictors()) %&gt;% 
+    step_zv(all_predictors())
+
+chocolate_rec</code></pre>
+<pre><code>## Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor         16
+## 
+## Operations:
+## 
+## Collapsing factor levels for company_manufacturer
+## Dummy variables from all_nominal_predictors()
+## Zero variance filter on all_predictors()</code></pre>
+<p>check preprocessed data.frame</p>
+<pre class="r"><code>chocolate_rec %&gt;% 
+    prep(new_data = NULL) %&gt;% 
+    juice()</code></pre>
+<pre><code>## # A tibble: 2,443 × 22
+##    cocoa_percent ingredient_num rating_bl company_manufactur… company_manufactu…
+##            &lt;dbl&gt;          &lt;dbl&gt; &lt;fct&gt;                   &lt;dbl&gt;              &lt;dbl&gt;
+##  1            76              3 &gt;=3                         0                  0
+##  2            76              3 &gt;=3                         0                  0
+##  3            76              3 &gt;=3                         0                  0
+##  4            68              3 &gt;=3                         0                  0
+##  5            72              3 &gt;=3                         0                  0
+##  6            80              3 &gt;=3                         0                  0
+##  7            68              3 &gt;=3                         0                  0
+##  8            70              4 &gt;=3                         0                  0
+##  9            63              4 &gt;=3                         0                  0
+## 10            70              4 &lt; 3                         0                  0
+## # … with 2,433 more rows, and 17 more variables:
+## #   company_manufacturer_Dandelion &lt;dbl&gt;, company_manufacturer_Fresco &lt;dbl&gt;,
+## #   company_manufacturer_Pralus &lt;dbl&gt;, company_manufacturer_Soma &lt;dbl&gt;,
+## #   company_manufacturer_otherCompany &lt;dbl&gt;,
+## #   country_of_bean_origin_blend_Non.blend &lt;dbl&gt;, igrdt_sugar_X1 &lt;dbl&gt;,
+## #   igrdt_vanilla_X1 &lt;dbl&gt;, igrdt_salt_X1 &lt;dbl&gt;, igrdt_sweeter_X1 &lt;dbl&gt;,
+## #   cocoa_X1 &lt;dbl&gt;, creamy_X1 &lt;dbl&gt;, fatty_X1 &lt;dbl&gt;, earthy_X1 &lt;dbl&gt;, …</code></pre>
+</div>
+<div id="split-samples" class="section level3">
+<h3>split samples</h3>
+<ul>
+<li><code>initial_split</code></li>
+</ul>
+<pre class="r"><code>set.seed(123)
+chocolate_split &lt;- initial_split(chocolate_df, strata = rating_bl)
+chocolate_train &lt;- training(chocolate_split)
+chocolate_testing &lt;- testing(chocolate_split)</code></pre>
+<ul>
+<li>resample</li>
+</ul>
+<pre class="r"><code>set.seed(123)
+folds &lt;- vfold_cv(chocolate_train, v = 10)
+folds</code></pre>
+<pre><code>## #  10-fold cross-validation 
+## # A tibble: 10 × 2
+##    splits             id    
+##    &lt;list&gt;             &lt;chr&gt; 
+##  1 &lt;split [1647/184]&gt; Fold01
+##  2 &lt;split [1648/183]&gt; Fold02
+##  3 &lt;split [1648/183]&gt; Fold03
+##  4 &lt;split [1648/183]&gt; Fold04
+##  5 &lt;split [1648/183]&gt; Fold05
+##  6 &lt;split [1648/183]&gt; Fold06
+##  7 &lt;split [1648/183]&gt; Fold07
+##  8 &lt;split [1648/183]&gt; Fold08
+##  9 &lt;split [1648/183]&gt; Fold09
+## 10 &lt;split [1648/183]&gt; Fold10</code></pre>
+</div>
+<div id="grid-tune-xgboost" class="section level3">
+<h3>grid tune xgboost</h3>
+<ul>
+<li>create model <code>boost_tree</code></li>
+</ul>
+<p>Details about <code>boost_tree</code> can be found <a href="https://parsnip.tidymodels.org/reference/details_boost_tree_xgboost.html" class="uri">https://parsnip.tidymodels.org/reference/details_boost_tree_xgboost.html</a></p>
+<p><em>require library <code>xgboost</code> installed.</em></p>
+<pre class="r"><code>xg_spec &lt;- 
+    boost_tree(
+        mtry=tune(), # the number (or proportion) of predictors that will be randomly sampled
+        min_n=tune() # minimum number of data points in a node
+    ) %&gt;% 
+    set_engine(&quot;xgboost&quot;) %&gt;% # importance=&quot;permutation&quot;
+    set_mode(&#39;classification&#39;)</code></pre>
+<ul>
+<li>define grid</li>
+</ul>
+<p><code>grid_max_entropy</code>, <code>grid_regular</code>, <code>grid_random</code> can be used for quickly specify levels for tuned hyperparameters.</p>
+<p>be aware that <code>mtry</code> usually requires <code>range</code> parameters, it usually contains the <code>sqrt(predictor_num)</code></p>
+<pre class="r"><code>xg_grid &lt;- grid_regular(
+    mtry(range = c(3, 10)),
+    min_n(),
+    levels = 5 # each tune how many levels
+)
+
+xg_grid</code></pre>
+<pre><code>## # A tibble: 25 × 2
+##     mtry min_n
+##    &lt;int&gt; &lt;int&gt;
+##  1     3     2
+##  2     4     2
+##  3     6     2
+##  4     8     2
+##  5    10     2
+##  6     3    11
+##  7     4    11
+##  8     6    11
+##  9     8    11
+## 10    10    11
+## # … with 15 more rows</code></pre>
+<ul>
+<li>create workflow</li>
+</ul>
+<pre class="r"><code>xg_wf &lt;- workflow() %&gt;% 
+    add_model(xg_spec) %&gt;% 
+    add_recipe(chocolate_rec)
+
+xg_wf</code></pre>
+<pre><code>## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: boost_tree()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_other()
+## • step_dummy()
+## • step_zv()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Boosted Tree Model Specification (classification)
+## 
+## Main Arguments:
+##   mtry = tune()
+##   min_n = tune()
+## 
+## Computational engine: xgboost</code></pre>
+<ul>
+<li>tune model to get result</li>
+</ul>
+<pre class="r"><code>system.time(
+    xg_res &lt;- 
+        xg_wf %&gt;% 
+        tune_grid(
+            resamples = folds,
+            grid = xg_grid
+            )
+    )</code></pre>
+<pre><code>##    user  system elapsed 
+## 137.026   1.136 141.611</code></pre>
+<ul>
+<li>evaluate models</li>
+</ul>
+<pre class="r"><code>xg_res %&gt;% 
+    collect_metrics() %&gt;% 
+    ggplot(aes(x = min_n, y=mean, color=as.factor(mtry))) +
+    facet_wrap(~.metric, scales=&quot;free&quot;) +
+    geom_point() +
+    geom_line(aes(group=as.factor(mtry))) +
+    theme_bw() +
+    labs(y=&quot;metrics estimate&quot;, x=&#39;minimum number of data points in a node (min_n)&#39;, color=&#39;the number of predictors that will be randomly sampled (mtry)&#39;) +
+    theme(legend.position = &quot;bottom&quot;)</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<ul>
+<li>select hyperparameters and finalize wf</li>
+</ul>
+<p><code>show_best(metric = )</code> allows to see the top 5 from <code>xg_res %&gt;% collect_metrics()</code></p>
+<p><code>select_best</code>, <code>select_by_pct_loss</code>, <code>select_by_one_std_err</code> select hyperparameters and corresponding <code>.config</code> to a tibble.</p>
+<pre class="r"><code>xg_tune_hy &lt;- xg_res %&gt;% 
+    select_best(metric = &quot;accuracy&quot;)
+
+xg_tune_hy</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##    mtry min_n .config              
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;                
+## 1     3    11 Preprocessor1_Model06</code></pre>
+<p>finalize model using selected hyperparameters</p>
+<pre class="r"><code>final_wf &lt;- 
+  xg_wf %&gt;% 
+  finalize_workflow(xg_tune_hy)
+
+final_wf</code></pre>
+<pre><code>## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: boost_tree()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_other()
+## • step_dummy()
+## • step_zv()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Boosted Tree Model Specification (classification)
+## 
+## Main Arguments:
+##   mtry = 3
+##   min_n = 11
+## 
+## Computational engine: xgboost</code></pre>
+</div>
+<div id="last_fit-model" class="section level3">
+<h3><code>last_fit</code> model</h3>
+<ul>
+<li>use <code>last_fit(split)</code></li>
+</ul>
+<pre class="r"><code>final_fit &lt;- final_wf %&gt;% 
+    last_fit(chocolate_split)
+
+final_fit</code></pre>
+<pre><code>## # Resampling results
+## # Manual resampling 
+## # A tibble: 1 × 6
+##   splits             id               .metrics   .notes   .predictions .workflow
+##   &lt;list&gt;             &lt;chr&gt;            &lt;list&gt;     &lt;list&gt;   &lt;list&gt;       &lt;list&gt;   
+## 1 &lt;split [1831/612]&gt; train/test split &lt;tibble [… &lt;tibble… &lt;tibble [61… &lt;workflo…</code></pre>
+<ul>
+<li><code>collect_metrics</code> for overall data</li>
+</ul>
+<pre class="r"><code>final_fit %&gt;% 
+    collect_metrics()</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##   .metric  .estimator .estimate .config             
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy binary         0.783 Preprocessor1_Model1
+## 2 roc_auc  binary         0.668 Preprocessor1_Model1</code></pre>
+<p>metrics are comparable to training data, so not overfiting.</p>
+<ul>
+<li><code>collect_predictions</code> for test data</li>
+</ul>
+<pre class="r"><code>final_fit %&gt;% 
+    collect_predictions()</code></pre>
+<pre><code>## # A tibble: 612 × 7
+##    id               `.pred_&lt; 3` `.pred_&gt;=3`  .row .pred_class rating_bl .config 
+##    &lt;chr&gt;                  &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;       &lt;fct&gt;     &lt;chr&gt;   
+##  1 train/test split      0.143        0.857     3 &gt;=3         &gt;=3       Preproc…
+##  2 train/test split      0.134        0.866    10 &gt;=3         &lt; 3       Preproc…
+##  3 train/test split      0.0882       0.912    11 &gt;=3         &lt; 3       Preproc…
+##  4 train/test split      0.131        0.869    17 &gt;=3         &gt;=3       Preproc…
+##  5 train/test split      0.0882       0.912    24 &gt;=3         &gt;=3       Preproc…
+##  6 train/test split      0.0882       0.912    25 &gt;=3         &gt;=3       Preproc…
+##  7 train/test split      0.0798       0.920    32 &gt;=3         &gt;=3       Preproc…
+##  8 train/test split      0.228        0.772    42 &gt;=3         &lt; 3       Preproc…
+##  9 train/test split      0.443        0.557    46 &gt;=3         &lt; 3       Preproc…
+## 10 train/test split      0.347        0.653    55 &gt;=3         &lt; 3       Preproc…
+## # … with 602 more rows</code></pre>
+<ul>
+<li><code>roc_auc</code> and <code>roc_curve</code> on test data</li>
+</ul>
+<p>calculate <code>roc_auc</code> manually on test data</p>
+<pre class="r"><code>final_fit %&gt;%
+  collect_predictions() %&gt;% 
+  roc_auc(truth=rating_bl, `.pred_&lt; 3`)</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   .metric .estimator .estimate
+##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
+## 1 roc_auc binary         0.668</code></pre>
+<p>plot <code>roc_curve</code></p>
+<pre class="r"><code>final_fit %&gt;%
+  collect_predictions() %&gt;% 
+  roc_curve(truth=rating_bl, `.pred_&lt; 3`) %&gt;% 
+  autoplot()</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-35-1.png" width="672" /></p>
+<ul>
+<li><code>extract_workflow()</code> to save <code>final_trained_wf</code></li>
+</ul>
+<pre class="r"><code>final_trained_wf &lt;- final_fit %&gt;% 
+    extract_workflow()
+
+final_trained_wf</code></pre>
+<pre><code>## ══ Workflow [trained] ══════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: boost_tree()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 3 Recipe Steps
+## 
+## • step_other()
+## • step_dummy()
+## • step_zv()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## ##### xgb.Booster
+## raw: 17.9 Kb 
+## call:
+##   xgboost::xgb.train(params = list(eta = 0.3, max_depth = 6, gamma = 0, 
+##     colsample_bytree = 1, colsample_bynode = 0.157894736842105, 
+##     min_child_weight = 11L, subsample = 1, objective = &quot;binary:logistic&quot;), 
+##     data = x$data, nrounds = 15, watchlist = x$watchlist, verbose = 0, 
+##     nthread = 1)
+## params (as set within xgb.train):
+##   eta = &quot;0.3&quot;, max_depth = &quot;6&quot;, gamma = &quot;0&quot;, colsample_bytree = &quot;1&quot;, colsample_bynode = &quot;0.157894736842105&quot;, min_child_weight = &quot;11&quot;, subsample = &quot;1&quot;, objective = &quot;binary:logistic&quot;, nthread = &quot;1&quot;, validate_parameters = &quot;TRUE&quot;
+## xgb.attributes:
+##   niter
+## callbacks:
+##   cb.evaluation.log()
+## # of features: 19 
+## niter: 15
+## nfeatures : 19 
+## evaluation_log:
+##     iter training_logloss
+##        1         0.603224
+##        2         0.554827
+## ---                      
+##       14         0.475184
+##       15         0.474635</code></pre>
+<ul>
+<li><p><code>extract_*</code> information from <code>final_trained_wf</code></p>
+<ul>
+<li><code>extract_fit_engine()</code> is engine-specific model</li>
+</ul></li>
+</ul>
+<pre class="r"><code>final_trained_wf %&gt;%
+  extract_fit_engine()</code></pre>
+<pre><code>## ##### xgb.Booster
+## raw: 17.9 Kb 
+## call:
+##   xgboost::xgb.train(params = list(eta = 0.3, max_depth = 6, gamma = 0, 
+##     colsample_bytree = 1, colsample_bynode = 0.157894736842105, 
+##     min_child_weight = 11L, subsample = 1, objective = &quot;binary:logistic&quot;), 
+##     data = x$data, nrounds = 15, watchlist = x$watchlist, verbose = 0, 
+##     nthread = 1)
+## params (as set within xgb.train):
+##   eta = &quot;0.3&quot;, max_depth = &quot;6&quot;, gamma = &quot;0&quot;, colsample_bytree = &quot;1&quot;, colsample_bynode = &quot;0.157894736842105&quot;, min_child_weight = &quot;11&quot;, subsample = &quot;1&quot;, objective = &quot;binary:logistic&quot;, nthread = &quot;1&quot;, validate_parameters = &quot;TRUE&quot;
+## xgb.attributes:
+##   niter
+## callbacks:
+##   cb.evaluation.log()
+## # of features: 19 
+## niter: 15
+## nfeatures : 19 
+## evaluation_log:
+##     iter training_logloss
+##        1         0.603224
+##        2         0.554827
+## ---                      
+##       14         0.475184
+##       15         0.474635</code></pre>
+<ul>
+<li><code>extract_fit_parsnip()</code> is parsnip model object</li>
+</ul>
+<pre class="r"><code>final_trained_wf %&gt;%
+  extract_fit_parsnip()</code></pre>
+<pre><code>## parsnip model object
+## 
+## Fit time:  31ms 
+## ##### xgb.Booster
+## raw: 17.9 Kb 
+## call:
+##   xgboost::xgb.train(params = list(eta = 0.3, max_depth = 6, gamma = 0, 
+##     colsample_bytree = 1, colsample_bynode = 0.157894736842105, 
+##     min_child_weight = 11L, subsample = 1, objective = &quot;binary:logistic&quot;), 
+##     data = x$data, nrounds = 15, watchlist = x$watchlist, verbose = 0, 
+##     nthread = 1)
+## params (as set within xgb.train):
+##   eta = &quot;0.3&quot;, max_depth = &quot;6&quot;, gamma = &quot;0&quot;, colsample_bytree = &quot;1&quot;, colsample_bynode = &quot;0.157894736842105&quot;, min_child_weight = &quot;11&quot;, subsample = &quot;1&quot;, objective = &quot;binary:logistic&quot;, nthread = &quot;1&quot;, validate_parameters = &quot;TRUE&quot;
+## xgb.attributes:
+##   niter
+## callbacks:
+##   cb.evaluation.log()
+## # of features: 19 
+## niter: 15
+## nfeatures : 19 
+## evaluation_log:
+##     iter training_logloss
+##        1         0.603224
+##        2         0.554827
+## ---                      
+##       14         0.475184
+##       15         0.474635</code></pre>
+<ul>
+<li><code>extract_recipe</code> or <code>extract_preprocessing</code> to get recipe/preprocessing</li>
+</ul>
+<pre class="r"><code>final_trained_wf %&gt;% extract_preprocessor()</code></pre>
+<pre><code>## Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor         16
+## 
+## Operations:
+## 
+## Collapsing factor levels for company_manufacturer
+## Dummy variables from all_nominal_predictors()
+## Zero variance filter on all_predictors()</code></pre>
+</div>
+<div id="feature-importance" class="section level3">
+<h3>feature importance</h3>
+<ul>
+<li><code>vip()</code> plot top 10</li>
+<li><code>vi_model()</code> return tibble</li>
+</ul>
+<pre class="r"><code>final_trained_wf %&gt;%
+  extract_fit_parsnip() %&gt;% 
+  vip()</code></pre>
+<p><img src="/post/2022-01-18-chocolate_files/figure-html/unnamed-chunk-40-1.png" width="672" /></p>
+</div>
+</div>
+<div id="final-notes" class="section level2">
+<h2>Final notes</h2>
+<ul>
+<li>I convert numeric <code>rating</code> to categorical rating using threshold because, based on the exploratory analysis, the <code>rating</code> values are not continuous.</li>
+<li>The <code>boost_tree</code> did not produce good estimate for the data.
+<ul>
+<li>Other models, like <code>rand_forest()</code>, <code>logistic_reg</code> and <code>svm_linear</code> are worth to try.</li>
+<li>Tuning other hyperparameters <code>tree_depth</code>, <code>learning_rate</code> and <code>trees</code> are worth to try. <em>I don’t know which tune-able hyperparameter corresponds to regularization <code>gamma</code></em>.</li>
+</ul></li>
+<li>Julia Silge posted a <a href="https://www.youtube.com/watch?v=w-lF65hKtrQ">screencast</a> and <a href="https://juliasilge.com/blog/chocolate-ratings/">blog</a> of using <code>rand_forest()</code> and <code>svm_linear</code> training rating as linear model on the same dataset.</li>
+</ul>
+</div>
