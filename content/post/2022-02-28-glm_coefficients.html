@@ -1,0 +1,416 @@
+---
+title: "Interpreting the coefficients of Generalized Linear Model"
+author: "Chun Su"
+date: "2022-02-28"
+categories: ["r"]
+tags: ["statistics", 'GLM', 'tidymodels']
+output: 
+  blogdown::html_page:
+          toc: true
+---
+
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#linear-regression">Linear regression</a><ul>
+<li><a href="#multivariate-linear-regression">Multivariate linear regression</a></li>
+<li><a href="#with-interaction-term">With interaction term</a></li>
+</ul></li>
+<li><a href="#logistic-regression">Logistic regression</a><ul>
+<li><a href="#when-y-is-binomial">When Y is binomial</a></li>
+<li><a href="#multinominal-predictors">Multinominal predictors</a></li>
+<li><a href="#contrasts-matrix">Contrasts matrix</a></li>
+<li><a href="#multinomial-outcome">Multinomial outcome</a></li>
+</ul></li>
+<li><a href="#poisson-regression">Poisson regression</a></li>
+<li><a href="#final-remarks">Final remarks</a></li>
+</ul>
+</div>
+
+<p>Linear model is the most popular model used in various of fields, due to its simple execution and interpretation. It can be not only used to predict like all other machine learning models. but also widely used for statistical inference due to its simplicity. <a href="https://en.wikipedia.org/wiki/Generalized_linear_model">Generalized Linear Model (GLM)</a>, as named indicated, is generalized from linear regression model, and extends linear model default assumptions to include outcome variables following exponential family distribution. It used <a href="https://www.statisticshowto.com/link-function/#:~:text=A%20link%20function%20in%20a,variable%20in%20a%20linear%20way.">link function</a> to transform the outcome so that the transformed Y can be represented by linear combination of predictors. Due to this transformation, it makes coefficients interpretation a little confusing. In this blog, I will use four classical examples (<code>Boston</code>, <code>Default</code>, <code>BrainCancer</code>, and <code>Bikeshare</code> from <a href="https://cran.r-project.org/web/packages/ISLR2/ISLR2.pdf"><code>ISLR2</code></a> package) to illustrate how to interpret the coefficients of GLM from <code>tidymodels</code> fit tidy outcome in R.</p>
+<pre class="r"><code>library(ISLR2)
+library(tidyverse)
+library(tidymodels)</code></pre>
+<div id="linear-regression" class="section level2">
+<h2>Linear regression</h2>
+<p>Modeling linear regression in R is simple. The following example used <code>dis</code> (weighted mean of distances to five Boston employment centers) as single predictor to predict <code>medv</code> (median value of house in $1000s) in Boston.</p>
+<pre class="r"><code>data(Boston)
+lm_m1 &lt;- lm(medv ~ dis, data = Boston)
+summary(lm_m1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = medv ~ dis, data = Boston)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -15.016  -5.556  -1.865   2.288  30.377 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  18.3901     0.8174  22.499  &lt; 2e-16 ***
+## dis           1.0916     0.1884   5.795 1.21e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 8.914 on 504 degrees of freedom
+## Multiple R-squared:  0.06246,    Adjusted R-squared:  0.0606 
+## F-statistic: 33.58 on 1 and 504 DF,  p-value: 1.207e-08</code></pre>
+<p>Based on coefficients summary, <code>dis</code> is significantly (p-value = 1.21e-08) positively correlated with <code>medv</code>. With 1 unit increase in term of distances to Boston employment centers, the median value of house increase $1091.6 = 1.0916 * 1000.</p>
+<div id="multivariate-linear-regression" class="section level3">
+<h3>Multivariate linear regression</h3>
+<p>In multivariate linear regression, when we interpret the coefficients, there are two components taken into account
+- whether the variables are independent
+- how to interpret the interaction term</p>
+<p>In the following example, we model the <code>medv</code> with <code>dis</code> (weighted mean of distances to five Boston employment centers), <code>rm</code> (average number of rooms per dwelling), <code>crim</code> (per capita crime rate by town) and <code>chas</code> (tract bounds river).</p>
+<p>For practice purpose, I will use <code>tidymodels</code> to build linear model in the multivariate linear regression example.</p>
+<div id="no-interaction-term" class="section level4">
+<h4>No interaction term</h4>
+<p>We starts with no interactions among the predictors.</p>
+<pre class="r"><code>lm_spec2 &lt;- linear_reg() %&gt;% 
+    set_engine(&#39;lm&#39;) %&gt;% 
+    set_mode(&#39;regression&#39;)
+
+lm_wf2 &lt;- workflow() %&gt;% 
+    add_model(lm_spec2) %&gt;% 
+    add_formula(medv ~ dis + rm + crim + chas)
+
+lm_fit2 &lt;- lm_wf2 %&gt;% 
+    fit(data = Boston)
+
+
+lm_fit2 %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 5 × 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)  -29.1      2.57      -11.3  1.20e-26
+## 2 dis            0.201    0.144       1.40 1.62e- 1
+## 3 rm             8.19     0.406      20.2  9.12e-67
+## 4 crim          -0.243    0.0350     -6.94 1.19e-11
+## 5 chas           3.98     1.10        3.63 3.10e- 4</code></pre>
+<p>In this model, all predictors except <code>dis</code> show significant correlation with <code>medv</code> (p-value &lt; 0.05). <code>rm</code> and <code>chas</code> are positively while <code>crim</code> is negatively associated with <code>medv</code>.
+- <code>rm</code>: <strong>when keeping all other variables the same</strong>, increase 1 room per dwelling on average results in $8,194.4 (<code>8.1944 * 1000</code>) increase in median house value.
+- <code>chas</code>: <strong>when keeping all other variables the same</strong>, having tracts bounds to the Charles river increase median house value $3,982.5 (<code>3.9825 * 1000</code>). <code>chas</code> is a dummy variable where = 1 if tract bounds river and =0 otherwise. Thus =0 (tract do not bound to river) is a baseline here. We will discuss more about baseline in later example.
+- <code>crim</code>: <strong>when keeping all other variables the same</strong>, 1 unit increase in per capita crime rate will result a decrease of $243.2 (<code>-0.24318 * 1000</code>) in median house value.</p>
+</div>
+</div>
+<div id="with-interaction-term" class="section level3">
+<h3>With interaction term</h3>
+<p>Based on common sense, usually the house is smaller when it is closer to city center. Adding interaction term between <code>rm</code> and <code>dis</code> we assumed that the number of room and the distance to business center are not independent. We are testing the hypothesis that the linear relationship between <code>dis</code> and <code>medv</code> was affected by the the <code>rm</code>. This affect can be linear or non-linear, can be negative or positive.</p>
+<pre class="r"><code>Boston %&gt;% 
+    ggplot(aes(rm)) +
+    geom_histogram() +
+    labs(x = &#39;mean number of room per dwelling&#39;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="/post/2022-02-28-glm_coefficients_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>Boston %&gt;% 
+    mutate(rm = as.integer(rm)) %&gt;% 
+    ggplot(aes(x=dis, y=medv, color=as.factor(rm))) +
+    geom_smooth(method = &#39;lm&#39;, se = F) +
+    labs(x = &#39;mean of distances to five Boston employment centers&#39;, y= &#39;median value of owner-occupied homes&#39;, color=&quot;mean number of room per dwelling&quot;) +
+    theme(legend.position = &#39;bottom&#39;)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/post/2022-02-28-glm_coefficients_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Thus, we added interaction term between <code>dis</code> and <code>rm</code>. The thumb of rule to use interaction term is hierarchical principle, which means, if we include an interaction in a model, we should also include the main effects, even if the p-values associated with main effect coefficients are not significant. Thus we should always use <code>*</code> instead of <code>:</code> when adding the interaction term. <code>dis*rm</code> means <code>dis + rm + dis:rm</code>.</p>
+<pre class="r"><code>lm_wf3 &lt;- workflow() %&gt;% 
+    add_model(lm_spec2) %&gt;% 
+    add_formula(medv ~ dis*rm + crim + chas)
+
+lm_fit3 &lt;- lm_wf3 %&gt;% 
+    fit(data = Boston)
+
+
+lm_fit3 %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 6 × 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)   -5.03     4.70       -1.07 2.85e- 1
+## 2 dis           -7.43     1.27       -5.84 9.30e- 9
+## 3 rm             4.38     0.744       5.89 7.11e- 9
+## 4 crim          -0.270    0.0341     -7.90 1.80e-14
+## 5 chas           3.99     1.06        3.77 1.83e- 4
+## 6 `dis:rm`       1.20     0.198       6.04 3.08e- 9</code></pre>
+<p>In this example, all predictors including interaction terms are significant. Interestingly, by adding the interaction between <code>dis</code> and <code>rm</code>, the coefficients associated with <code>dis</code> turn negative from positive when using simple single variable model. To interpret the interaction term,</p>
+<ul>
+<li><code>dis:rm</code>: since interaction term is significant (p-value = 3.077938e-09), thus linear relationship between <code>dis</code> and <code>medv</code> was significantly dependent on the <code>rm</code>, justifying the inclusion of the interaction term in the model.</li>
+<li><code>dis</code>: when there are 3 ~ 6 rooms in dwelling, one unit further away from five Boston employment centers, it results in $3,835 to $244 (<code>(-7.426 + range(3,6) * 1.197) * 1000</code>) decrease in median value of house. when there are more than 6 (<code>7.426/1.197</code>) rooms in dwelling, one unit further away from five Boston employment centers, it results in at least $953 (<code>(-7.426 + 7 * 1.197) * 1000</code>) increase in median value of house.</li>
+<li><code>rm</code>: <em>keeping the mean distance to five Boston employment centers as constant <code>dis</code></em>, one more room in dwelling will increase <code>1000 * (1.197 * dis + 4.380)</code> in the median value of house. Because the interaction term is positive (<code>1.197</code>), the rate of <code>medv</code> increase in terms of the room number will increase when it is further away from Boston employment centers.</li>
+</ul>
+<div id="when-to-use-interaction-term" class="section level5">
+<h5>When to use interaction term</h5>
+<p>The frequently asked question about interaction term is “when should we include interaction term”. The conventional answer is when two predictors are not independent. However, in reality, unless we have very strong prior knowledge about the predictors, it is hard to determine whether two predictors are dependent or not without exploring the data. From the articles/blogs about interaction term I read so far, two methods are generally used to determine whether add interaction term</p>
+<ol style="list-style-type: decimal">
+<li><p>try both with and without adding interaction term, if adding interaction term results in significance on interaction term, then use interaction term.</p></li>
+<li><p>like what I did above, plot Y against X1 with X2 as nominal variable (if X2 is not nominal variable itself). If the lines from different X2 levels are parallel, then X1 and X2 are independent and no interaction terms are needed. Otherwise, add interaction term.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>Logistic regression</h2>
+<p>In the regular linear regression mentioned above, the Y is numeric (aka. quantitative). However, when Y is nominal (aka, qualitative), logistic regression will be used. To make Y still represented by linear combination of predictors, we used logit function (link function) to transform Y (the probability) to <span class="math inline">\(ln(\frac{p}{1-p})\)</span> (the log odds).</p>
+<p><span class="math display">\[ln(\frac{p}{1-p}) = \sum\beta X\]</span>
+<span class="math inline">\(\beta\)</span> represents log odds ratio. thus, odds ratio <span class="math inline">\(OR = e^\beta\)</span>.</p>
+<div id="when-y-is-binomial" class="section level3">
+<h3>When Y is binomial</h3>
+<p>To evaluate whether a customer will default the credit card <code>default</code>, we build a logistic model with three predictors – whether the customer is a <code>student</code>, the <code>balance</code> on the account and the customer <code>income</code>.</p>
+<p>Again, for practice purpose, I used <code>tidymodels</code> syntax for demonstration.</p>
+<pre class="r"><code>data(&quot;Default&quot;)
+lr_spec &lt;- logistic_reg() %&gt;% 
+    set_engine(&#39;glm&#39;) %&gt;% 
+    set_mode(&#39;classification&#39;)
+
+default_wf &lt;- workflow() %&gt;% 
+    add_model(lr_spec) %&gt;% 
+    add_formula(default ~ .)
+
+default_fit &lt;- default_wf %&gt;% 
+    fit(data = Default)
+
+default_fit %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 4 × 5
+##   term            estimate  std.error statistic   p.value
+##   &lt;chr&gt;              &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept) -10.9        0.492        -22.1   4.91e-108
+## 2 studentYes   -0.647      0.236         -2.74  6.19e-  3
+## 3 balance       0.00574    0.000232      24.7   4.22e-135
+## 4 income        0.00000303 0.00000820     0.370 7.12e-  1</code></pre>
+<p>In this model, two predictors (<code>student</code> and <code>balance</code>) are significantly associated with <code>default</code>. To interpret coefficients, we first need to know which is the baseline of <code>default</code>.</p>
+<pre class="r"><code>contrasts(Default$default)</code></pre>
+<pre><code>##     Yes
+## No    0
+## Yes   1</code></pre>
+<p>Based on the <code>contrasts</code> output, the baseline of <code>default</code> is <code>No</code>. Thus,</p>
+<ul>
+<li><p><code>student</code>: <strong>When keeping all other variable constant</strong>, compared to non-student (<code>student = 0</code>), a student (<code>student = 1</code>) is less likely to default credit card. The odds ratio is 0.524 (<code>exp(-6.467758e-01)</code>). In other words, if the odds of defaulting credit card as non-student is 1, the odds of defaulting credit card as a student is 0.524 (<code>exp(-6.467758e-01)</code>).</p></li>
+<li><p><code>balance</code>: <strong>When keeping all other variable constant</strong>, 1 dollar increase in account balance will result in increasing odds of 1.005 (<code>exp(5.736505e-03)</code>) to default credit card.</p></li>
+</ul>
+<p>Note: above modeling is a bad model since there are high correlation between the predictors (<a href="https://www.britannica.com/topic/collinearity-statistics">collinearity</a>). I just used it as an example to interpret the coefficients.</p>
+</div>
+<div id="multinominal-predictors" class="section level3">
+<h3>Multinominal predictors</h3>
+<p>Using multi-nominal predictor <code>diagnosis</code> and other predictors like <code>sex</code> and age <code>time</code> to predict whether the patient survived the brain cancer or not <code>status</code></p>
+<pre class="r"><code>data(&#39;BrainCancer&#39;)
+BrainCancer &lt;- BrainCancer %&gt;% 
+    na.omit()
+contrasts(BrainCancer$diagnosis)</code></pre>
+<pre><code>##            LG glioma HG glioma Other
+## Meningioma         0         0     0
+## LG glioma          1         0     0
+## HG glioma          0         1     0
+## Other              0         0     1</code></pre>
+<p>In this example, <code>Meningioma</code> is the baseline for multi-nominal predictor <code>diagnosis</code>.</p>
+<pre class="r"><code>BrainCancer_rec &lt;- recipe(status ~ ., data = BrainCancer) %&gt;% 
+    step_mutate(status = as.factor(status)) %&gt;% 
+    step_dummy(diagnosis)
+    
+BrainCancer_wf &lt;- workflow() %&gt;% 
+    add_model(lr_spec) %&gt;% 
+    add_recipe(BrainCancer_rec)
+
+BrainCancer_fit &lt;- BrainCancer_wf %&gt;% 
+    fit(data = BrainCancer)
+
+BrainCancer_fit %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 10 × 5
+##    term                estimate std.error statistic p.value
+##    &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 (Intercept)           3.56      2.57       1.39  0.166  
+##  2 sexMale               0.369     0.576      0.640 0.522  
+##  3 locSupratentorial     1.09      0.901      1.21  0.227  
+##  4 ki                   -0.0695    0.0326    -2.13  0.0332 
+##  5 gtv                   0.0382    0.0366     1.04  0.296  
+##  6 stereoSRT             0.253     0.771      0.328 0.743  
+##  7 time                 -0.0339    0.0155    -2.18  0.0291 
+##  8 diagnosis_LG.glioma   1.31      0.844      1.55  0.122  
+##  9 diagnosis_HG.glioma   2.37      0.778      3.05  0.00231
+## 10 diagnosis_Other       0.765     0.940      0.814 0.416</code></pre>
+<p>For multi-nominal predictor <code>diagnosis</code>, the levels (<code>LG glioma</code>, <code>HG glioma</code> and <code>Other</code>) are compared to the baseline <code>Meningioma</code>, and it ends with three terms for coefficient estimation.</p>
+<p>Based on above model, only <code>HG glioma</code> show significant association with survival (p-value &lt; 0.05) when choose <code>Meningioma</code> as baseline. <strong>When keeping all other variable constant</strong>, compare to <code>Meningioma</code>, the patient with <code>HG glioma</code> are 10 times more (<code>exp(2.37027243)</code>) likely to survive. If we want to compare <code>HG glioma</code> with <code>Other</code> cancer type, simply use <code>exp(2.37027243-0.76482440)</code> to get odds ratio between <code>HG glioma</code> and <code>Other</code>, in which compare to <code>Other</code>, the patient with <code>HG glioma</code> are 5 times more (<code>exp(2.37027243-0.76482440)</code>) likely to survive. However, in this case, we do not know whether this comparison is statistically significant. We can get p-value for this comparison by switching <code>Other</code> as baseline.</p>
+</div>
+<div id="contrasts-matrix" class="section level3">
+<h3>Contrasts matrix</h3>
+<p>Another baseline assignment is using the global average as baseline. To do that, we need to change the <code>contrasts</code> matrix. The following code replace the default contrasts <code>contr.treatment</code> with <code>contr.sum</code> on <code>globalOptions</code>, then use <code>step_dummy</code> from <code>recipe</code> to realize it</p>
+<pre class="r"><code>BrainCancer_rec %&gt;% 
+    prep() %&gt;% 
+    bake(new_data = NULL, starts_with(&quot;diagnosis&quot;)) %&gt;% 
+    mutate(diagnosis_orginal = BrainCancer$diagnosis) %&gt;% 
+    distinct()</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   diagnosis_LG.glioma diagnosis_HG.glioma diagnosis_Other diagnosis_orginal
+##                 &lt;dbl&gt;               &lt;dbl&gt;           &lt;dbl&gt; &lt;fct&gt;            
+## 1                   0                   0               0 Meningioma       
+## 2                   0                   1               0 HG glioma        
+## 3                   1                   0               0 LG glioma        
+## 4                   0                   0               1 Other</code></pre>
+<pre class="r"><code>contr_opt &lt;- getOption(&quot;contrasts&quot;)
+contr_opt</code></pre>
+<pre><code>##         unordered           ordered 
+## &quot;contr.treatment&quot;      &quot;contr.poly&quot;</code></pre>
+<p>The original baseline is <code>Meningioma</code>, each <code>diagnosis_</code> is compared to the <code>Meningioma</code>.</p>
+<pre class="r"><code>contr_sum_opt &lt;- contr_opt
+contr_sum_opt[&#39;unordered&#39;] &lt;- &#39;contr.sum&#39;
+options(contrasts = contr_sum_opt)
+
+# my_naming &lt;- function(var, lvl, ordinal = FALSE, sep = &quot;_&quot;){
+#     paste(var, levels(BrainCancer$diagnosis)[lvl])
+# }
+
+BrainCancer_rec2 &lt;- recipe(status ~ ., data = BrainCancer) %&gt;% 
+    step_mutate(status = as.factor(status)) %&gt;% 
+    step_dummy(diagnosis)
+    
+BrainCancer_rec2 %&gt;% 
+    prep() %&gt;% 
+    bake(new_data = NULL, starts_with(&quot;diagnosis&quot;)) %&gt;% 
+    mutate(diagnosis_orginal = BrainCancer$diagnosis) %&gt;% 
+    distinct()</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   diagnosis_X1 diagnosis_X2 diagnosis_X3 diagnosis_orginal
+##          &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt; &lt;fct&gt;            
+## 1            1            0            0 Meningioma       
+## 2            0            0            1 HG glioma        
+## 3            0            1            0 LG glioma        
+## 4           -1           -1           -1 Other</code></pre>
+<p>Thus <code>diagnosis_X1</code>, <code>diagnosis_X2</code> and <code>diagnosis_X3</code> now represents <code>Meningioma</code>, <code>HG glioma</code> and <code>LG glioma</code> compared to average baseline.</p>
+<pre class="r"><code>BrainCancer_wf2 &lt;- workflow() %&gt;% 
+    add_recipe(BrainCancer_rec2) %&gt;% 
+    add_model(lr_spec)
+
+BrainCancer_fit2 &lt;- BrainCancer_wf2 %&gt;% 
+    fit(data = BrainCancer)
+
+BrainCancer_fit2 %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 10 × 5
+##    term         estimate std.error statistic p.value
+##    &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 (Intercept)    5.52      2.66       2.07   0.0380
+##  2 sex1          -0.184     0.288     -0.640  0.522 
+##  3 loc1          -0.545     0.451     -1.21   0.227 
+##  4 ki            -0.0695    0.0326    -2.13   0.0332
+##  5 gtv            0.0382    0.0366     1.04   0.296 
+##  6 stereo1       -0.127     0.386     -0.328  0.743 
+##  7 time          -0.0339    0.0155    -2.18   0.0291
+##  8 diagnosis_X1  -1.11      0.468     -2.37   0.0177
+##  9 diagnosis_X2   0.195     0.594      0.329  0.742 
+## 10 diagnosis_X3   1.26      0.542      2.33   0.0200</code></pre>
+<p>Based on the newly trained model <code>BrainCancer_fit2</code>, only <code>Meningioma</code> and <code>LG glioma</code> show significant association with survival (p-value &lt; 0.05) when compared to global average. <strong>When keeping all other variable constant</strong>, <strong>compare to global average</strong>, the patient with <code>Meningioma</code> has only 32.9% (<code>exp(-1.11018843)</code>) average survive rate, while the patient with <code>LG glioma</code> are 3.5 times (<code>exp(1.26008400)</code>) more likely to survive.</p>
+<p>More about coding contrasts in base R syntax can be found at this <a href="https://marissabarlaz.github.io/portfolio/contrastcoding/">article</a>.</p>
+</div>
+<div id="multinomial-outcome" class="section level3">
+<h3>Multinomial outcome</h3>
+<p>Using the same dataset <code>BrainCancer</code>, now I try to predict the <code>diagnosis</code> based on the tumor location (<code>loc</code>), Karnofsky index (<code>ki</code>), Gross tumor volume (<code>gtv</code>) and Stereotactic method (<code>stereo</code>). Here we used <code>multinom_reg()</code> to model multinomial regression</p>
+<pre class="r"><code>options(contrasts = contr_opt) # reset contrasts options back to `contr.treatment`
+
+ml_spec &lt;- multinom_reg() %&gt;% 
+    set_engine(&#39;nnet&#39;) %&gt;% 
+    set_mode(&#39;classification&#39;)
+
+BrainCancer_rec3 &lt;- recipe(diagnosis ~ loc + ki + gtv + stereo, data = BrainCancer) %&gt;% 
+    update_role(diagnosis, new_role = &#39;outcome&#39;) %&gt;% 
+    step_normalize(all_numeric_predictors()) %&gt;% 
+    step_dummy(all_nominal_predictors())
+
+BrainCancer_wf3 &lt;- workflow() %&gt;% 
+    add_model(ml_spec) %&gt;% 
+    add_recipe(BrainCancer_rec3)
+
+BrainCancer_fit3 &lt;- BrainCancer_wf3 %&gt;% 
+    fit(data = BrainCancer)
+
+BrainCancer_fit3</code></pre>
+<pre><code>## ══ Workflow [trained] ══════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: multinom_reg()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 2 Recipe Steps
+## 
+## • step_normalize()
+## • step_dummy()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Call:
+## nnet::multinom(formula = ..y ~ ., data = data, trace = FALSE)
+## 
+## Coefficients:
+##           (Intercept)          ki         gtv loc_Supratentorial stereo_SRT
+## LG glioma  -2.3035689  0.23860763 -0.02596393          0.3998414  0.5444269
+## HG glioma  -2.5894735  0.03684929  0.15897113          0.9417737  1.3658683
+## Other      -0.4158848 -0.29780559  0.14203552         -2.7892771  1.4289732
+## 
+## Residual Deviance: 187.5196 
+## AIC: 217.5196</code></pre>
+<p>In the multinomial regression, no p-value were reported. The coefficients represent log odds ratio.</p>
+<p>Each row in the coefficient table corresponds to the model equation. eg. the first row represents the coefficients for <code>LG glioma</code> in comparison to our baseline <code>Meningioma</code>. Each column in the coefficient table corresponds to specific coefficient estimate. Thus, compared to <code>Meningioma</code>, using <code>SRT</code> Stereotactic method is about 4 times (<code>exp(1.3658683)</code>) more likely diagnose <code>HG glioma</code>. A tumor is only 6% (<code>exp(-2.7892771)</code>) chance to be diagnosed as <code>Other</code> instead of <code>Meningioma</code> if it is located at <code>Supratentorial</code> area.</p>
+<p>To perform above model in base R syntax, please refer to the <a href="https://datasciencebeginners.com/2018/12/20/multinomial-logistic-regression-using-r/#:~:text=Multinomial%20regression%20is%20an%20extension,one%20or%20more%20independent%20variable.">blog post</a> by Mohit Sharma.</p>
+</div>
+</div>
+<div id="poisson-regression" class="section level2">
+<h2>Poisson regression</h2>
+<p>Poisson regression is used to model count outcome. Unlike regular linear regression, count outcome is not real continuous variable. Instead, it must be positive integer and usually modeled by Poisson distribution rather than normal distribution.</p>
+<p>The link function for Poisson regression is log function <span class="math inline">\(\ln\lambda\)</span> where <span class="math inline">\(\lambda\)</span> represents the mean of outcome.</p>
+<p>In the following example, we use <code>Bikeshare</code> data to predict <code>bikers</code> outcome which represents the <em>count</em> of rental bikers</p>
+<pre class="r"><code>data(&#39;Bikeshare&#39;)
+Bikeshare_rec &lt;- recipe(bikers ~ season + weekday + weathersit + temp + hum + windspeed, data = Bikeshare ) %&gt;% 
+    step_num2factor(season, levels = c(&quot;winter&quot;,&#39;spring&#39;,&#39;summer&#39;,&#39;fall&#39;)) %&gt;%
+    step_num2factor(weekday, transform = function(x) {x+1}, levels = c(&#39;sunday&#39;,&#39;monday&#39;,&#39;tuesday&#39;,&#39;wednesday&#39;,&#39;thursday&#39;,&#39;friday&#39;,&#39;saturday&#39;)) %&gt;%
+    step_normalize(all_numeric_predictors()) %&gt;%
+    step_dummy(all_nominal_predictors()) %&gt;%
+    I()
+
+# Bikeshare_rec %&gt;% prep() %&gt;% bake(new_data = NULL)
+
+pr_spec &lt;- poissonreg::poisson_reg() %&gt;% 
+    set_engine(&#39;glm&#39;) %&gt;% 
+    set_mode(&#39;regression&#39;)
+
+Bikeshare_wf &lt;- workflow() %&gt;% 
+    add_recipe(Bikeshare_rec) %&gt;% 
+    add_model(pr_spec)
+
+Bikeshare_fit &lt;- Bikeshare_wf %&gt;% 
+    fit(data = Bikeshare)
+
+Bikeshare_fit %&gt;% 
+    tidy()</code></pre>
+<pre><code>## # A tibble: 16 × 5
+##    term                       estimate std.error statistic   p.value
+##    &lt;chr&gt;                         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 (Intercept)                  4.58    0.00385   1191.    0        
+##  2 temp                         0.426   0.00149    285.    0        
+##  3 hum                         -0.256   0.00108   -238.    0        
+##  4 windspeed                    0.0404  0.000949    42.6   0        
+##  5 season_spring                0.302   0.00384     78.7   0        
+##  6 season_summer                0.144   0.00449     32.1   1.12e-226
+##  7 season_fall                  0.613   0.00345    177.    0        
+##  8 weekday_monday              -0.0464  0.00336    -13.8   1.82e- 43
+##  9 weekday_tuesday             -0.0405  0.00336    -12.1   1.42e- 33
+## 10 weekday_wednesday           -0.0524  0.00342    -15.3   4.88e- 53
+## 11 weekday_thursday            -0.0804  0.00339    -23.7   2.70e-124
+## 12 weekday_friday              -0.0151  0.00335     -4.51  6.47e-  6
+## 13 weekday_saturday            -0.0187  0.00336     -5.58  2.36e-  8
+## 14 weathersit_cloudy.misty      0.106   0.00223     47.4   0        
+## 15 weathersit_light.rain.snow  -0.163   0.00425    -38.4   0        
+## 16 weathersit_heavy.rain.snow  -0.0368  0.167       -0.221 8.25e-  1</code></pre>
+<pre class="r"><code>contrasts(Bikeshare$weathersit)</code></pre>
+<pre><code>##                 cloudy/misty light rain/snow heavy rain/snow
+## clear                      0               0               0
+## cloudy/misty               1               0               0
+## light rain/snow            0               1               0
+## heavy rain/snow            0               0               1</code></pre>
+<p>All terms except <code>weathersit_heavy.rain.snow</code> are significantly associated with rental bikers number.
+- when keeping all other variables constant, compared to <code>season_winter</code>, <code>season_spring</code> will increase the mean of rental biker count by 1.35 <code>exp(0.30234965)</code>. In other words, there will be 135% bikers rental a bike in spring than winter.
+- when keeping all other variables constant, every unit increase in temperature will result in on average 1.53 (<code>exp(0.42588059)</code>) rental biker customer.</p>
+<p><em>note:above model is not optimal model to predict rental bikers. We use the model without interactions to simplify the question and emphasize interpretation of coefficients in the context of poisson regression . To interpret the coefficients with interaction term, refer to previous regular linear regression example</em></p>
+</div>
+<div id="final-remarks" class="section level2">
+<h2>Final remarks</h2>
+<p>In this post, I focus on interpret the coefficients in three GLM, and show the examples of coefficients associated with both quantitative and qualitative predictors. I also include the examples to interpret coefficients when 1) add interaction term, 2) with multi-nominal outcome and 3) with alternative contrast matrix.</p>
+</div>
